@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}PigMoney — Despesas{% endblock %}
+
+{% block content %}
+
+    <div class="page-header">
+        <h1 class="page-title">Despesas</h1>
+        <a href="{% url 'despesa_cadastrar' %}" class="btn btn-primary">+ Nova Despesa</a>
+    </div>
+
+    {% if despesas %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Descricao</th>
+                    <th>Valor</th>
+                    <th>Data</th>
+                    <th>Categoria</th>
+                    <th>Acoes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for despesa in despesas %}
+                    <tr>
+                        <td>{{ despesa.descricao }}</td>
+                        <td class="valor-despesa">R$ {{ despesa.valor }}</td>
+                        <td>{{ despesa.data_despesa|date:"d/m/Y" }}</td>
+                        <td>{{ despesa.categoria }}</td>
+                        <td class="acoes">
+                            <a href="{% url 'despesa_editar' despesa.id_despesa %}" class="btn btn-sm btn-edit">Editar</a>
+                            <a href="{% url 'despesa_excluir' despesa.id_despesa %}" class="btn btn-sm btn-danger">Excluir</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="empty-state">
+            <p>Nenhuma despesa cadastrada ainda.</p>
+            <a href="{% url 'despesa_cadastrar' %}" class="btn btn-primary">Cadastrar primeira despesa</a>
+        </div>
+    {% endif %}
+
+{% endblock %}

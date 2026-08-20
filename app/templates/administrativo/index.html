@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}PigMoney — Administrativo{% endblock %}
+
+{% block content %}
+
+    <h1 class="page-title">Administrativo</h1>
+    <p class="page-description">Área destinada à administração do sistema.</p>
+
+    <div class="cards">
+        <div class="card">
+            <h2>Usuários</h2>
+            <p>Bloqueio, desbloqueio e gestão de contas.</p>
+        </div>
+        <div class="card">
+            <h2>Categorias</h2>
+            <p>Gerenciamento administrativo de categorias.</p>
+        </div>
+    </div>
+
+    <div style="margin-top: 1.5rem;">
+        <a href="{% url 'admin:index' %}" class="btn btn-primary">Acessar Painel do Django Admin</a>
+    </div>
+
+{% endblock %}

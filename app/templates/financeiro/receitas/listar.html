@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}PigMoney — Receitas{% endblock %}
+
+{% block content %}
+
+    <div class="page-header">
+        <h1 class="page-title">Receitas</h1>
+        <a href="{% url 'receita_cadastrar' %}" class="btn btn-primary">+ Nova Receita</a>
+    </div>
+
+    {% if receitas %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Descricao</th>
+                    <th>Valor</th>
+                    <th>Data</th>
+                    <th>Categoria</th>
+                    <th>Acoes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for receita in receitas %}
+                    <tr>
+                        <td>{{ receita.descricao }}</td>
+                        <td class="valor-receita">R$ {{ receita.valor }}</td>
+                        <td>{{ receita.data_receita|date:"d/m/Y" }}</td>
+                        <td>{{ receita.categoria }}</td>
+                        <td class="acoes">
+                            <a href="{% url 'receita_editar' receita.id_receita %}" class="btn btn-sm btn-edit">Editar</a>
+                            <a href="{% url 'receita_excluir' receita.id_receita %}" class="btn btn-sm btn-danger">Excluir</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="empty-state">
+            <p>Nenhuma receita cadastrada ainda.</p>
+            <a href="{% url 'receita_cadastrar' %}" class="btn btn-primary">Cadastrar primeira receita</a>
+        </div>
+    {% endif %}
+
+{% endblock %}

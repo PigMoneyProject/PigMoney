@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}PigMoney — Cadastrar Receita{% endblock %}
+
+{% block content %}
+
+    <h1 class="page-title">Cadastrar Receita</h1>
+    <p class="page-description">Preencha os dados para registrar uma nova receita.</p>
+
+    <div class="form-card">
+        <form method="post">
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="field-errors">
+                            {% for error in field.errors %}
+                                <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <a href="{% url 'receita_listar' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}

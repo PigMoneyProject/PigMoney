@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}PigMoney — Categorias{% endblock %}
+
+{% block content %}
+
+    <h1 class="page-title">Categorias</h1>
+    <p class="page-description">Categorias disponiveis para organizar receitas e despesas.</p>
+
+    {% if categorias %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Descricao</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for categoria in categorias %}
+                    <tr>
+                        <td>{{ categoria.nome_categoria }}</td>
+                        <td>{{ categoria.descricao|default:"-" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="empty-state">
+            <p>Nenhuma categoria cadastrada ainda.</p>
+        </div>
+    {% endif %}
+
+{% endblock %}

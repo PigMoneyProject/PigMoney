@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}PigMoney — Excluir Receita{% endblock %}
+
+{% block content %}
+
+    <h1 class="page-title">Excluir Receita</h1>
+
+    <div class="form-card">
+        <p>Tem certeza que deseja excluir esta receita?</p>
+
+        <div class="confirm-details">
+            <p><strong>Descricao:</strong> {{ receita.descricao }}</p>
+            <p><strong>Valor:</strong> R$ {{ receita.valor }}</p>
+            <p><strong>Data:</strong> {{ receita.data_receita|date:"d/m/Y" }}</p>
+            <p><strong>Categoria:</strong> {{ receita.categoria }}</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-danger">Sim, excluir</button>
+                <a href="{% url 'receita_listar' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}

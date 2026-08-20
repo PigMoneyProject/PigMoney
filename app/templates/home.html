@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}PigMoney — Início{% endblock %}
+
+{% block content %}
+
+    <h1 class="page-title">PigMoney</h1>
+    <p class="page-description">Controle suas finanças de forma simples.</p>
+
+    <div class="cards">
+        <a class="card" href="{% url 'perfil' %}">
+            <h2>Usuários</h2>
+            <p>Cadastro, login e perfil dos usuários.</p>
+        </a>
+
+        <a class="card" href="{% url 'financeiro_index' %}">
+            <h2>Financeiro</h2>
+            <p>Receitas, despesas, categorias e saldo.</p>
+        </a>
+
+        <a class="card" href="{% url 'administrativo_index' %}">
+            <h2>Administrativo</h2>
+            <p>Gestão administrativa e de usuários.</p>
+        </a>
+    </div>
+
+{% endblock %}

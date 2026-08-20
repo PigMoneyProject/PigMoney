@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}PigMoney — Cadastro{% endblock %}
+
+{% block content %}
+
+    <h1 class="page-title">Cadastro</h1>
+    <p class="page-description">Crie sua conta para comecar a gerenciar suas financas.</p>
+
+    <div class="form-card">
+        <form method="post">
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="field-errors">
+                            {% for error in field.errors %}
+                                <p class="error-text">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Cadastrar</button>
+                <a href="{% url 'login' %}" class="btn btn-secondary">Ja tenho conta</a>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}

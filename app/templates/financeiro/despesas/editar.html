@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}PigMoney — Editar Despesa{% endblock %}
+
+{% block content %}
+
+    <h1 class="page-title">Editar Despesa</h1>
+    <p class="page-description">Altere os dados da despesa "{{ despesa.descricao }}".</p>
+
+    <div class="form-card">
+        <form method="post">
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="field-errors">
+                            {% for error in field.errors %}
+                                <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Atualizar</button>
+                <a href="{% url 'despesa_listar' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}

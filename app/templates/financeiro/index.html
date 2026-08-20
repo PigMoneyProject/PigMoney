@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}PigMoney — Financeiro{% endblock %}
+
+{% block content %}
+
+    <h1 class="page-title">Financeiro</h1>
+    <p class="page-description">Área destinada ao controle financeiro do usuário.</p>
+
+    <div class="cards">
+        <a class="card" href="{% url 'receita_listar' %}">
+            <h2>Receitas</h2>
+            <p>Entradas de dinheiro.</p>
+        </a>
+        <a class="card" href="{% url 'despesa_listar' %}">
+            <h2>Despesas</h2>
+            <p>Saidas de dinheiro.</p>
+        </a>
+        <a class="card" href="{% url 'categoria_listar' %}">
+            <h2>Categorias</h2>
+            <p>Organizacao dos lancamentos.</p>
+        </a>
+        <div class="card">
+            <h2>Saldo</h2>
+            <p>Resumo da situacao financeira.</p>
+        </div>
+    </div>
+
+{% endblock %}
