@@ -1,13 +1,14 @@
+#O urls funciona como um mapa de rotas. Ele recebe o endereço acessado pelo usuário e determina qual View será executada.
 from django.contrib import admin
 from django.urls import path
-from django.contrib.auth import views as auth_views
+from django.contrib.auth import views as auth_views #sistema de autenticação do Django para login e logout.
 from django.shortcuts import render
 
 from app import views as app_views
 
 
 def home(request):
-    return render(request, 'home.html')
+    return render(request, 'home.html') #página inicial.
 
 
 urlpatterns = [
@@ -72,7 +73,7 @@ urlpatterns = [
     ),
 
     path(
-        'receitas/editar/<int:id>/',
+        'receitas/editar/<int:id>/', #chama com o id corretamente para nao editar a receita errada
         app_views.receita_editar,
         name='receita_editar'
     ),
