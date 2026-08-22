@@ -1,20 +1,27 @@
+{# Herda a estrutura base do layout do PigMoney (cabeçalho, menu, rodapé). #}
 {% extends 'base.html' %}
 
 {% block title %}PigMoney — Cadastro{% endblock %}
 
 {% block content %}
 
-    <h1 class="page-title">Cadastro</h1>
-    <p class="page-description">Crie sua conta para comecar a gerenciar suas financas.</p>
+    <div class="auth-content">
+        <h1 class="page-title">Cadastro</h1>
+        <p class="page-description">Crie sua conta para comecar a gerenciar suas financas.</p>
+    </div>
 
     <div class="form-card">
         <form method="post">
+            {# {% csrf_token %} gera um token de segurança obrigatório para formulários POST. #}
             {% csrf_token %}
 
+            {# {% for field in form %} percorre todos os campos do formulário Django. #}
+            {# Cada campo gera um <input>, <select> ou <textarea> automaticamente. #}
             {% for field in form %}
                 <div class="form-group">
                     <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
+                    {# Exibe erros de validação deste campo específico. #}
                     {% if field.errors %}
                         <div class="field-errors">
                             {% for error in field.errors %}

@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- permite utilizar os arquivos estáticos do Django. -->
+    {# {% load static %} permite usar arquivos estáticos (CSS, JS, imagens) nos templates. #}
     {% load static %}
-    <!-- conecta o HTML ao arquivo CSS. -->
+
+    {# Conecta este HTML ao arquivo de estilo principal do projeto. #}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
+    {# {% block title %} define o título da aba do navegador. Cada página sobrescreve esse bloco. #}
     <title>{% block title %}PigMoney{% endblock %}</title>
 </head>
 
@@ -16,25 +18,66 @@
 
     <header class="site-header">
         <div class="container">
-            <a class="brand" href="{% url 'home' %}">PigMoney</a>
+
+            {# ── LOGO PIGMONEY ── #}
+            {# A logo se comporta de forma diferente dependendo da autenticação: #}
+            {# - Visitante (não logado): clica e vai para a Home. #}
+            {# - Usuário autenticado: clica e vai para o Dashboard (financeiro). #}
+            {# Isso é controlado por user.is_authenticated, disponível em todos os templates. #}
+            {% if user.is_authenticated %}
+                <a href="{% url 'financeiro_index' %}">
+                    <img
+                        src="{% static 'img/logo_pigmoney.png' %}"
+                        alt="PigMoney"
+                        class="logo-pigmoney"
+                    >
+                </a>
+            {% else %}
+                <a href="{% url 'home' %}">
+                    <img
+                        src="{% static 'img/logo_pigmoney.png' %}"
+                        alt="PigMoney"
+                        class="logo-pigmoney"
+                    >
+                </a>
+            {% endif %}
+
             <nav class="main-nav">
                 <ul>
+                    {# {% if user.is_authenticated %} verifica se existe um usuário logado. #}
+                    {# O objeto "user" é disponibilizado automaticamente pelo Django em todos os templates. #}
                     {% if user.is_authenticated %}
-                        <li><a href="{% url 'financeiro_index' %}">Dashboard</a></li>
+
+                        {# ── Menu do usuário autenticado ── #}
+                        {# Ordem: Início → Receitas → Despesas → Categorias → Perfil → Saiba Mais → [Admin] → Sair #}
+                        {# O botão Início usa a mesma rota do Dashboard porque representa a página principal do usuário autenticado. #}
+                        <li><a href="{% url 'financeiro_index' %}">Início</a></li>
                         <li><a href="{% url 'receita_listar' %}">Receitas</a></li>
                         <li><a href="{% url 'despesa_listar' %}">Despesas</a></li>
                         <li><a href="{% url 'categoria_listar' %}">Categorias</a></li>
                         <li><a href="{% url 'perfil' %}">Perfil</a></li>
+                        <li><a href="{% url 'saiba_mais' %}">Saiba Mais</a></li>
+
+                        {# {% if user.is_staff %} mostra o link apenas para administradores. #}
+                        {# is_staff é um campo nativo do Django: True = administrador, False = comum. #}
                         {% if user.is_staff %}
                             <li><a href="{% url 'administrativo_index' %}">Administrativo</a></li>
                         {% endif %}
+
                     {% else %}
+
+                        {# ── Menu do visitante (não autenticado) ── #}
                         <li><a href="{% url 'home' %}">Inicio</a></li>
-                        <li><a href="{% url 'cadastro' %}">Cadastre-se</a></li>
+                        <li><a href="{% url 'saiba_mais' %}">Saiba Mais</a></li>
+
                     {% endif %}
                 </ul>
             </nav>
+
+            {# ── Botão de ação (Entrar ou Sair) ── #}
             {% if user.is_authenticated %}
+                {# Logout via POST por segurança — previne ataques CSRF. #}
+                {# {% csrf_token %} gera um token de segurança obrigatório em formulários POST. #}
                 <form action="{% url 'logout' %}" method="post" style="display:inline;">
                     {% csrf_token %}
                     <button type="submit" class="btn-login" style="border:none;cursor:pointer;">Sair</button>
@@ -48,12 +91,14 @@
     <main class="page">
         <div class="container">
 
+            {# Exibe mensagens de sucesso ou erro enviadas pelas views via framework de mensagens do Django. #}
             {% if messages %}
                 {% for message in messages %}
                     <div class="alert alert-{{ message.tags }}">{{ message }}</div>
                 {% endfor %}
             {% endif %}
 
+            {# {% block content %} é o bloco que cada página sobrescreve para exibir seu conteúdo. #}
             {% block content %}
             {% endblock %}
 

@@ -1,3 +1,4 @@
+{# Dashboard financeiro — exibe cards de acesso rápido. #}
 {% extends 'base.html' %}
 
 {% block title %}PigMoney — Financeiro{% endblock %}
@@ -5,8 +6,9 @@
 {% block content %}
 
     <h1 class="page-title">Financeiro</h1>
-    <p class="page-description">Área destinada ao controle financeiro do usuário.</p>
+    <p class="page-description">Area destinada ao controle financeiro do usuario.</p>
 
+    {# Cards de navegação para cada seção financeira. #}
     <div class="cards">
         <a class="card" href="{% url 'receita_listar' %}">
             <h2>Receitas</h2>

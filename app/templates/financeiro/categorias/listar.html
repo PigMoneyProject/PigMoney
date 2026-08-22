@@ -1,32 +1,78 @@
+{# Lista categorias padrão e personalizadas do usuário logado. #}
 {% extends 'base.html' %}
 
 {% block title %}PigMoney — Categorias{% endblock %}
 
 {% block content %}
 
-    <h1 class="page-title">Categorias</h1>
-    <p class="page-description">Categorias disponiveis para organizar receitas e despesas.</p>
+    <div class="page-header">
+        <h1 class="page-title">Categorias</h1>
+        <a href="{% url 'categoria_cadastrar' %}" class="btn btn-primary">+ Nova Categoria</a>
+    </div>
 
-    {% if categorias %}
+    {# ── CATEGORIAS PADRÃO ── #}
+    {# Categorias padrão: pertencem a todos os usuários (usuario=NULL). #}
+    {# Não podem ser editadas nem excluídas por usuários comuns. #}
+    <h2 class="page-subtitle" style="font-size:1.2rem;margin-bottom:0.75rem;color:var(--cor-texto-suave);">Categorias padrao</h2>
+
+    {% if categorias_padrao %}
         <table class="table">
             <thead>
                 <tr>
                     <th>Nome</th>
                     <th>Descricao</th>
+                    <th>Tipo</th>
                 </tr>
             </thead>
             <tbody>
-                {% for categoria in categorias %}
+                {% for categoria in categorias_padrao %}
                     <tr>
                         <td>{{ categoria.nome_categoria }}</td>
                         <td>{{ categoria.descricao|default:"-" }}</td>
+                        <td><span class="badge badge-padrao">Padrao</span></td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     {% else %}
-        <div class="empty-state">
-            <p>Nenhuma categoria cadastrada ainda.</p>
+        <div class="empty-state" style="padding:1.5rem;margin-bottom:1.5rem;">
+            <p>Nenhuma categoria padrao disponivel.</p>
+        </div>
+    {% endif %}
+
+    {# ── MINHAS CATEGORIAS (PERSONALIZADAS) ── #}
+    {# Categorias pessoais: pertencem ao usuário logado. #}
+    {# Podem ser editadas e excluídas pelo proprietário. #}
+    <h2 class="page-subtitle" style="font-size:1.2rem;margin:1.5rem 0 0.75rem;color:var(--cor-texto-suave);">Minhas categorias</h2>
+
+    {% if categorias_pessoais %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Descricao</th>
+                    <th>Tipo</th>
+                    <th>Acoes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for categoria in categorias_pessoais %}
+                    <tr>
+                        <td>{{ categoria.nome_categoria }}</td>
+                        <td>{{ categoria.descricao|default:"-" }}</td>
+                        <td><span class="badge badge-personalizada">Personalizada</span></td>
+                        <td class="acoes">
+                            <a href="{% url 'categoria_editar' categoria.id_categoria %}" class="btn btn-edit btn-sm">Editar</a>
+                            <a href="{% url 'categoria_excluir' categoria.id_categoria %}" class="btn btn-danger btn-sm">Excluir</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="empty-state" style="padding:1.5rem;">
+            <p>Voce ainda nao criou categorias personalizadas.</p>
+            <a href="{% url 'categoria_cadastrar' %}" class="btn btn-primary">+ Nova Categoria</a>
         </div>
     {% endif %}
 

@@ -1,27 +1,34 @@
+{# Herda a estrutura base do layout do PigMoney (cabeçalho, menu, rodapé). #}
 {% extends 'base.html' %}
 
+{# Define o título que aparece na aba do navegador. #}
 {% block title %}PigMoney — Início{% endblock %}
 
+{# Bloco de conteúdo principal que substitui {% block content %} do base.html. #}
 {% block content %}
 
-    <h1 class="page-title">PigMoney</h1>
-    <p class="page-description">Controle suas finanças de forma simples.</p>
+    {# ── Apresentação da página inicial ── #}
+    <div class="home-hero">
+        <h1 class="page-title">PigMoney</h1>
+        <p class="page-description">
+            Organize suas finanças de forma simples e eficiente.
+        </p>
+        <p class="home-text">
+            O PigMoney ajuda você a organizar suas receitas e despesas,
+            acompanhar seu saldo e melhorar o controle das suas finanças
+            pessoais. Cadastre suas movimentações, categorize seus gastos
+            e tenha uma visão clara da sua situação financeira.
+        </p>
+    </div>
 
-    <div class="cards">
-        <a class="card" href="{% url 'perfil' %}">
-            <h2>Usuários</h2>
-            <p>Cadastro, login e perfil dos usuários.</p>
-        </a>
-
-        <a class="card" href="{% url 'financeiro_index' %}">
-            <h2>Financeiro</h2>
-            <p>Receitas, despesas, categorias e saldo.</p>
-        </a>
-
-        <a class="card" href="{% url 'administrativo_index' %}">
-            <h2>Administrativo</h2>
-            <p>Gestão administrativa e de usuários.</p>
-        </a>
+    {# ── Botões de ação da página inicial ── #}
+    <div class="home-actions">
+        {# Botão "Entrar" leva para a página de login. #}
+        <a href="{% url 'login' %}" class="btn btn-primary">Entrar</a>
+        {# Leva novos visitantes para o formulário de criação de conta já existente. #}
+        <a href="{% url 'cadastro' %}" class="btn btn-outline">Criar uma conta</a>
+        {# Botão "Saiba Mais" leva para a página pública de apresentação. #}
+        <a href="{% url 'saiba_mais' %}" class="btn btn-secondary">Saiba Mais</a>
     </div>
 
 {% endblock %}

@@ -1,13 +1,12 @@
-{# Formulário para editar uma receita existente. #}
+{# Formulário para cadastrar uma nova categoria personalizada. #}
 {% extends 'base.html' %}
 
-{% block title %}PigMoney — Editar Receita{% endblock %}
+{% block title %}PigMoney — Cadastrar Categoria{% endblock %}
 
 {% block content %}
 
-    <h1 class="page-title">Editar Receita</h1>
-    {# {{ receita.descricao }} insere o nome da receita no título. #}
-    <p class="page-description">Altere os dados da receita "{{ receita.descricao }}".</p>
+    <h1 class="page-title">Cadastrar Categoria</h1>
+    <p class="page-description">Crie uma categoria personalizada para organizar suas receitas e despesas.</p>
 
     <div class="form-card">
         <form method="post">
@@ -28,8 +27,8 @@
             {% endfor %}
 
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Atualizar</button>
-                <a href="{% url 'receita_listar' %}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <a href="{% url 'categoria_listar' %}" class="btn btn-secondary">Cancelar</a>
             </div>
         </form>
     </div>

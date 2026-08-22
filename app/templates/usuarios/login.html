@@ -1,21 +1,27 @@
+{# Herda a estrutura base do layout do PigMoney. #}
 {% extends 'base.html' %}
 
 {% block title %}PigMoney — Login{% endblock %}
 
 {% block content %}
 
-    <h1 class="page-title">Entrar</h1>
-    <p class="page-description">Acesse sua conta para gerenciar suas financas.</p>
+    <div class="auth-content">
+        <h1 class="page-title">Entrar</h1>
+        <p class="page-description">Acesse sua conta para gerenciar suas financas.</p>
 
-    {% if form.errors %}
-        <div class="alert alert-error">
-            Usuario ou senha invalidos. Tente novamente.
-        </div>
-    {% endif %}
+        {# form.errors contém erros de autenticação (credenciais inválidas). #}
+        {% if form.errors %}
+            <div class="alert alert-error">
+                Usuario ou senha invalidos. Tente novamente.
+            </div>
+        {% endif %}
+    </div>
 
     <div class="form-card">
         <form method="post">
+            {# {% csrf_token %} protege o formulário contra ataques CSRF. #}
             {% csrf_token %}
+
             <div class="form-group">
                 <label for="id_username">Usuario</label>
                 <input type="text" name="username" id="id_username" class="form-control" required autofocus>
@@ -26,9 +32,13 @@
             </div>
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">Entrar</button>
-                <a href="{% url 'cadastro' %}" class="btn btn-secondary">Cadastre-se</a>
             </div>
         </form>
+
+        {# Link para cadastro — redireciona quem não possui conta. #}
+        <p class="login-link">
+            Nao tem uma conta? <a href="{% url 'cadastro' %}">Crie uma</a>.
+        </p>
     </div>
 
 {% endblock %}

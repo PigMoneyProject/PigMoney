@@ -1,3 +1,4 @@
+{# Herda a estrutura base do layout do PigMoney. #}
 {% extends 'base.html' %}
 
 {% block title %}PigMoney — Perfil{% endblock %}
@@ -11,6 +12,7 @@
         <form method="post">
             {% csrf_token %}
 
+            {# Renderiza automaticamente os campos: Nome, Sobrenome, E-mail, Usuario. #}
             {% for field in form %}
                 <div class="form-group">
                     <label for="{{ field.id_for_label }}">{{ field.label }}</label>
@@ -32,9 +34,11 @@
         </form>
     </div>
 
+    {# ── Informações adicionais do perfil ── #}
     <div class="cards" style="margin-top: 1.5rem;">
         <div class="card">
             <h2>Tipo de Conta</h2>
+            {# user.is_staff retorna True se o usuário for administrador. #}
             {% if user.is_staff %}
                 <p>Administrador</p>
             {% else %}
@@ -43,6 +47,8 @@
         </div>
         <div class="card">
             <h2>Membro desde</h2>
+            {# {{ variavel }} insere o valor de uma variável Python no HTML. #}
+            {# O filtro |date:"d/m/Y" formata a data para dia/mês/ano. #}
             <p>{{ user.date_joined|date:"d/m/Y" }}</p>
         </div>
     </div>

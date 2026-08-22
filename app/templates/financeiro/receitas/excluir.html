@@ -1,3 +1,4 @@
+{# Página de confirmação para excluir uma receita. #}
 {% extends 'base.html' %}
 
 {% block title %}PigMoney — Excluir Receita{% endblock %}
@@ -9,6 +10,7 @@
     <div class="form-card">
         <p>Tem certeza que deseja excluir esta receita?</p>
 
+        {# Exibe os dados da receita para confirmação. #}
         <div class="confirm-details">
             <p><strong>Descricao:</strong> {{ receita.descricao }}</p>
             <p><strong>Valor:</strong> R$ {{ receita.valor }}</p>
@@ -16,6 +18,7 @@
             <p><strong>Categoria:</strong> {{ receita.categoria }}</p>
         </div>
 
+        {# O POST confirma a exclusão. A View recebe e executa delete(). #}
         <form method="post">
             {% csrf_token %}
             <div class="form-actions">

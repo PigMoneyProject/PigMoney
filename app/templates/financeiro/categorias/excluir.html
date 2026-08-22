@@ -1,0 +1,24 @@
+{# Página de confirmação para excluir uma categoria personalizada. #}
+{% extends 'base.html' %}
+
+{% block title %}PigMoney — Excluir Categoria{% endblock %}
+
+{% block content %}
+
+    <h1 class="page-title">Excluir Categoria</h1>
+    <p class="page-description">Tem certeza que deseja excluir esta categoria?</p>
+
+    <div class="confirm-details">
+        <p><strong>Nome:</strong> {{ categoria.nome_categoria }}</p>
+        <p><strong>Descricao:</strong> {{ categoria.descricao|default:"-" }}</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-danger">Excluir</button>
+            <a href="{% url 'categoria_listar' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+
+{% endblock %}

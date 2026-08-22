@@ -1,0 +1,97 @@
+{# Herda a estrutura base do layout do PigMoney. #}
+{% extends 'base.html' %}
+
+{% block title %}PigMoney — Saiba Mais{% endblock %}
+
+{% block content %}
+
+    <h1 class="page-title">Conheça o PigMoney</h1>
+    <p class="page-description">
+        O PigMoney é uma plataforma web desenvolvida para auxiliar na
+        organização das finanças pessoais, permitindo que o usuário
+        acompanhe suas receitas, despesas e outras informações
+        financeiras de forma simples e organizada.
+    </p>
+
+    {# ── Funcionalidades já implementadas ── #}
+    <h2 class="saiba-subtitle">Funcionalidades Disponíveis</h2>
+
+    <div class="cards">
+        <div class="card">
+            <h2>Controle de Receitas</h2>
+            <p>
+                Cadastre, visualize, edite e exclua valores recebidos,
+                como salários, pagamentos e outras fontes de renda.
+            </p>
+        </div>
+        <div class="card">
+            <h2>Controle de Despesas</h2>
+            <p>
+                Registre e acompanhe seus gastos, facilitando a
+                identificação de onde o dinheiro está sendo utilizado.
+            </p>
+        </div>
+        <div class="card">
+            <h2>Categorias</h2>
+            <p>
+                Organize suas movimentações em categorias, facilitando
+                a organização financeira do dia a dia.
+            </p>
+        </div>
+        <div class="card">
+            <h2>Dashboard Financeiro</h2>
+            <p>
+                Acesse um painel que reúne informações importantes sobre
+                a situação financeira do usuário.
+            </p>
+        </div>
+    </div>
+
+    {# ── Funcionalidades previstas (planejadas) ── #}
+    <h2 class="saiba-subtitle">Funcionalidades Planejadas</h2>
+
+    <div class="cards">
+        <div class="card card-planejado">
+            <h2>Saldo</h2>
+            <p>
+                O projeto prevê o cálculo automático do saldo utilizing
+                as receitas e despesas cadastradas.
+            </p>
+        </div>
+        <div class="card card-planejado">
+            <h2>Metas Financeiras</h2>
+            <p>
+                O PigMoney contará com a criação e acompanhamento de
+                objetivos financeiros pessoais.
+            </p>
+        </div>
+        <div class="card card-planejado">
+            <h2>Planejamento Financeiro</h2>
+            <p>
+                A plataforma poderá auxiliar o usuário a organizar e
+                planejar seus gastos mensais.
+            </p>
+        </div>
+        <div class="card card-planejado">
+            <h2>Histórico Financeiro</h2>
+            <p>
+                O projeto prevê a consulta de movimentações financeiras
+                realizadas anteriormente.
+            </p>
+        </div>
+        <div class="card card-planejado">
+            <h2>Relatórios</h2>
+            <p>
+                As informações cadastradas poderão ser apresentadas
+                através de gráficos e relatórios para facilitar a
+                compreensão das finanças.
+            </p>
+        </div>
+    </div>
+
+    {# ── Botão final de ação ── #}
+    <div class="home-actions" style="margin-top: 2.5rem;">
+        <a href="{% url 'login' %}" class="btn btn-primary">Começar agora</a>
+    </div>
+
+{% endblock %}

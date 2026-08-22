@@ -1,17 +1,38 @@
+/* ==========================================
+   VARIÁVEIS DE CORES — IDENTIDADE VISUAL PIGMONEY
+   ==========================================
+   Paleta dourada/amarela que remete a dinheiro,
+   moedas e organização financeira.
+   Cores neutras (branco, preto, cinza) garantem
+   contraste e legibilidade.
+   ========================================== */
+
 :root {
-    --cor-primaria: #2e7d32;
-    --cor-primaria-escura: #1b5e20;
-    --cor-fundo: #f1f8f1;
-    --cor-texto: #1c2e1c;
-    --cor-texto-suave: #5c6b5c;
-    --cor-branca: #ffffff;
-    --cor-borda: #cfe3cf;
-    --sombra: 0 2px 8px rgba(28, 46, 28, 0.08);
+    /* ── Cores principais (dourado/amarelo claro) ── */
+    --dourado-principal: #FDE9A0;
+    --dourado-escuro: #D4A017;
+    --amarelo-claro: #FEF3C7;
+    --amarelo-muito-claro: #FFFBEB;
+
+    /* ── Cores de fundo ── */
+    --cor-fundo: #FFFEF7;
+    --cor-fundo-card: #FFFFFF;
+
+    /* ── Cores de texto ── */
+    --cor-texto: #2B2B2B;
+    --cor-texto-suave: #6B6B6B;
+    --cor-branca: #FFFFFF;
+
+    /* ── Bordas e sombras ── */
+    --cor-borda: #F0E4BF;
+    --sombra: 0 2px 8px rgba(43, 43, 43, 0.08);
     --raio: 10px;
-    --cor-erro: #c62828;
-    --cor-erro-bg: #fdecea;
+
+    /* ── Cores de status ── */
     --cor-sucesso: #2e7d32;
     --cor-sucesso-bg: #e8f5e9;
+    --cor-erro: #c62828;
+    --cor-erro-bg: #fdecea;
     --cor-editar: #1565c0;
     --cor-perigo: #c62828;
 }
@@ -31,11 +52,17 @@ body {
     flex-direction: column;
 }
 
-/* ── Header ─────────────────────────────────────── */
+/* ==========================================
+   CABEÇALHO E MENU DE NAVEGAÇÃO
+   ==========================================
+   Navbar com fundo dourado. Utiliza flexbox
+   para alinhar logo, links e botão de login.
+   A logo é uma imagem carregada via {% static %}.
+   ========================================== */
 
 .site-header {
-    background-color: var(--cor-primaria);
-    padding: 1rem 2rem;
+    background-color: var(--dourado-principal);
+    padding: 0.75rem 2rem;
 }
 
 .site-header .container {
@@ -45,8 +72,16 @@ body {
     gap: 1rem;
 }
 
+/* Classe da logo (imagem) na Navbar. */
+.logo-pigmoney {
+    height: 45px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+}
+
 .brand {
-    color: var(--cor-branca);
+    color: var(--cor-texto);
     font-size: 1.5rem;
     font-weight: 700;
     text-decoration: none;
@@ -54,28 +89,31 @@ body {
 
 .main-nav ul {
     display: flex;
-    gap: 1.25rem;
+    gap: 1rem;
     list-style: none;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 .main-nav a {
-    color: var(--cor-branca);
+    color: var(--cor-texto);
     text-decoration: none;
-    padding: 0.4rem 0.75rem;
+    padding: 0.4rem 0.65rem;
     border-radius: 6px;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
+    transition: background-color 0.15s ease;
 }
 
 .main-nav a:hover,
 .main-nav a:focus {
-    background-color: var(--cor-primaria-escura);
+    background-color: var(--dourado-escuro);
+    color: var(--cor-branca);
 }
 
 .btn-login {
     background-color: var(--cor-branca);
-    color: var(--cor-primaria);
+    color: var(--dourado-escuro);
     border: none;
     border-radius: 6px;
     padding: 0.45rem 1.1rem;
@@ -88,10 +126,15 @@ body {
 }
 
 .btn-login:hover {
-    background-color: var(--cor-fundo);
+    background-color: var(--amarelo-claro);
 }
 
-/* ── Container / Page ───────────────────────────── */
+/* ==========================================
+   CONTAINER E ÁREA DE CONTEÚDO
+   ==========================================
+   O container centraliza o conteúdo com
+   largura máxima de 960px.
+   ========================================== */
 
 .container {
     width: 100%;
@@ -107,12 +150,32 @@ body {
 .page-title {
     font-size: 2rem;
     margin-bottom: 0.5rem;
+    color: var(--cor-texto);
 }
 
 .page-description {
     color: var(--cor-texto-suave);
     margin-bottom: 2rem;
     font-size: 1.1rem;
+}
+
+/* ── Centraliza texto e reduz espaço nas páginas de autenticação ── */
+.auth-content {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.auth-content .page-title {
+    margin-bottom: 0.25rem;
+}
+
+.auth-content .page-description {
+    margin-bottom: 1.25rem;
+}
+
+.auth-content .alert {
+    text-align: left;
 }
 
 .page-header {
@@ -128,7 +191,88 @@ body {
     margin-bottom: 0;
 }
 
-/* ── Cards ──────────────────────────────────────── */
+/* ==========================================
+   TELA INICIAL (HOME)
+   ==========================================
+   Centraliza conteúdo e adiciona
+   espaçamento nos botões de ação.
+   ========================================== */
+
+.home-hero {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.home-hero .page-title {
+    font-size: 2.5rem;
+}
+
+.home-text {
+    color: var(--cor-texto-suave);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.home-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* ==========================================
+   PÁGINA "SAIBA MAIS"
+   ==========================================
+   Subtítulos e cards de funcionalidades
+   planejadas (com borda tracejada).
+   ========================================== */
+
+.saiba-subtitle {
+    font-size: 1.4rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--dourado-escuro);
+}
+
+.card-planejado {
+    opacity: 0.8;
+    border-style: dashed;
+}
+
+/* ==========================================
+   LINK DA PÁGINA DE LOGIN
+   ==========================================
+   Estilo do texto "Não tem uma conta? Crie uma"
+   exibido abaixo do formulário de login.
+   ========================================== */
+
+.login-link {
+    text-align: center;
+    margin-top: 1.25rem;
+    color: var(--cor-texto-suave);
+    font-size: 0.95rem;
+}
+
+.login-link a {
+    color: var(--dourado-escuro);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+/* ==========================================
+   CARDS
+   ==========================================
+   Caixas informativas utilizadas na Home,
+   Dashboard, Perfil e outras páginas.
+   Utilizam CSS Grid para se adaptar a
+   diferentes tamanhos de tela.
+   ========================================== */
 
 .cards {
     display: grid;
@@ -137,7 +281,7 @@ body {
 }
 
 .card {
-    background-color: var(--cor-branca);
+    background-color: var(--cor-fundo-card);
     border: 1px solid var(--cor-borda);
     border-radius: var(--raio);
     box-shadow: var(--sombra);
@@ -151,7 +295,8 @@ body {
 .card:hover,
 .card:focus {
     transform: translateY(-3px);
-    box-shadow: 0 4px 14px rgba(59, 47, 36, 0.15);
+    box-shadow: 0 4px 14px rgba(212, 160, 23, 0.18);
+    border-color: var(--dourado-principal);
 }
 
 .card h2 {
@@ -164,7 +309,12 @@ body {
     font-size: 0.95rem;
 }
 
-/* ── Alerts ─────────────────────────────────────── */
+/* ==========================================
+   MENSAGENS (ALERTAS)
+   ==========================================
+   Mensagens de sucesso mantêm verde (função
+   semântica). Erros mantêm vermelho.
+   ========================================== */
 
 .alert {
     padding: 0.85rem 1.25rem;
@@ -186,12 +336,17 @@ body {
     border: 1px solid #ef9a9a;
 }
 
-/* ── Tables ─────────────────────────────────────── */
+/* ==========================================
+   TABELAS (RECEITAS, DESPESAS, CATEGORIAS)
+   ==========================================
+   Cabeçalho dourado, linhas com efeito hover
+   em tom amarelo claro.
+   ========================================== */
 
 .table {
     width: 100%;
     border-collapse: collapse;
-    background-color: var(--cor-branca);
+    background-color: var(--cor-fundo-card);
     border-radius: var(--raio);
     overflow: hidden;
     box-shadow: var(--sombra);
@@ -199,8 +354,8 @@ body {
 }
 
 .table thead {
-    background-color: var(--cor-primaria);
-    color: var(--cor-branca);
+    background-color: var(--dourado-principal);
+    color: var(--cor-texto);
 }
 
 .table th,
@@ -219,7 +374,7 @@ body {
 }
 
 .table tbody tr:hover {
-    background-color: var(--cor-fundo);
+    background-color: var(--amarelo-muito-claro);
 }
 
 .valor-receita {
@@ -237,7 +392,14 @@ body {
     gap: 0.5rem;
 }
 
-/* ── Buttons ────────────────────────────────────── */
+/* ==========================================
+   BOTÕES
+   ==========================================
+   btn-primary: dourado principal.
+   btn-secondary: cinza neutro.
+   btn-danger: vermelho (excluir).
+   btn-edit: azul (editar).
+   ========================================== */
 
 .btn {
     display: inline-block;
@@ -257,21 +419,32 @@ body {
 }
 
 .btn-primary {
-    background-color: var(--cor-primaria);
-    color: var(--cor-branca);
+    background-color: var(--dourado-principal);
+    color: var(--cor-texto);
 }
 
 .btn-primary:hover {
-    background-color: var(--cor-primaria-escura);
+    background-color: var(--dourado-escuro);
+    color: var(--cor-branca);
 }
 
 .btn-secondary {
-    background-color: var(--cor-borda);
+    background-color: #E0E0E0;
     color: var(--cor-texto);
 }
 
 .btn-secondary:hover {
-    background-color: #b0d4b0;
+    background-color: #BDBDBD;
+}
+
+/* Botão secundário — usado para ações como "Criar uma conta". */
+.btn-outline {
+    background-color: var(--amarelo-claro);
+    color: var(--cor-texto);
+}
+
+.btn-outline:hover {
+    background-color: var(--amarelo-muito-claro);
 }
 
 .btn-danger {
@@ -297,15 +470,21 @@ body {
     font-size: 0.85rem;
 }
 
-/* ── Forms ──────────────────────────────────────── */
+/* ==========================================
+   FORMULÁRIOS
+   ==========================================
+   Bordas douradas nos campos de entrada.
+   Efeito de foco com tom amarelo.
+   ========================================== */
 
 .form-card {
-    background-color: var(--cor-branca);
+    background-color: var(--cor-fundo-card);
     border: 1px solid var(--cor-borda);
     border-radius: var(--raio);
     box-shadow: var(--sombra);
     padding: 2rem;
     max-width: 600px;
+    margin: 0 auto;
 }
 
 .form-group {
@@ -328,14 +507,14 @@ body {
     font-size: 0.95rem;
     font-family: inherit;
     color: var(--cor-texto);
-    background-color: var(--cor-branca);
+    background-color: var(--cor-fundo-card);
     transition: border-color 0.15s ease;
 }
 
 .form-control:focus {
     outline: none;
-    border-color: var(--cor-primaria);
-    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+    border-color: var(--dourado-principal);
+    box-shadow: 0 0 0 3px rgba(252, 211, 77, 0.25);
 }
 
 select.form-control {
@@ -359,7 +538,7 @@ select.form-control {
 }
 
 .confirm-details {
-    background-color: var(--cor-fundo);
+    background-color: var(--amarelo-muito-claro);
     border: 1px solid var(--cor-borda);
     border-radius: var(--raio);
     padding: 1.25rem;
@@ -375,12 +554,17 @@ select.form-control {
     margin-bottom: 0;
 }
 
-/* ── Empty State ────────────────────────────────── */
+/* ==========================================
+   ESTADO VAZIO
+   ==========================================
+   Mensagem exibida quando não há dados para
+   mostrar (ex: nenhuma receita cadastrada).
+   ========================================== */
 
 .empty-state {
     text-align: center;
     padding: 3rem 1.5rem;
-    background-color: var(--cor-branca);
+    background-color: var(--cor-fundo-card);
     border: 1px solid var(--cor-borda);
     border-radius: var(--raio);
     box-shadow: var(--sombra);
@@ -392,12 +576,80 @@ select.form-control {
     margin-bottom: 1.25rem;
 }
 
-/* ── Footer ─────────────────────────────────────── */
+/* ==========================================
+   BADGES (TIPO DE CATEGORIA)
+   ==========================================
+   Indicadores visuais para diferenciar
+   categorias padrão de personalizadas.
+   ========================================== */
+
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.badge-padrao {
+    background-color: var(--amarelo-claro);
+    color: var(--dourado-escuro);
+}
+
+.badge-personalizada {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+/* ==========================================
+   RODAPÉ
+   ==========================================
+   Rodapé com fundo dourado escuro.
+   ========================================== */
 
 .site-footer {
-    background-color: var(--cor-primaria);
-    color: var(--cor-branca);
+    background-color: var(--dourado-principal);
+    color: var(--cor-texto);
     text-align: center;
     padding: 1rem;
     font-size: 0.9rem;
+}
+
+/* ==========================================
+   RESPONSIVIDADE
+   ==========================================
+   Ajustes para telas menores. O menu de
+   navegação se adapta, os cards se reorganizam
+   e os formulários mantêm a legibilidade.
+   ========================================== */
+
+@media (max-width: 768px) {
+    .site-header .container {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .main-nav ul {
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .main-nav a {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.5rem;
+    }
+
+    .home-hero .page-title {
+        font-size: 2rem;
+    }
+
+    .home-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .logo-pigmoney {
+        height: 35px;
+    }
 }

@@ -1,3 +1,4 @@
+{# Herda a estrutura base do layout do PigMoney. #}
 {% extends 'base.html' %}
 
 {% block title %}PigMoney — Alterar Senha{% endblock %}
@@ -11,6 +12,7 @@
         <form method="post">
             {% csrf_token %}
 
+            {# Renderiza os campos: Senha Atual, Nova Senha, Confirmação. #}
             {% for field in form %}
                 <div class="form-group">
                     <label for="{{ field.id_for_label }}">{{ field.label }}</label>

@@ -1,3 +1,4 @@
+{# Lista todas as receitas do usuário logado. #}
 {% extends 'base.html' %}
 
 {% block title %}PigMoney — Receitas{% endblock %}
@@ -9,6 +10,7 @@
         <a href="{% url 'receita_cadastrar' %}" class="btn btn-primary">+ Nova Receita</a>
     </div>
 
+    {# Verifica se existem receitas para exibir. #}
     {% if receitas %}
         <table class="table">
             <thead>
@@ -21,13 +23,16 @@
                 </tr>
             </thead>
             <tbody>
+                {# {% for receita in receitas %} percorre cada receita da lista. #}
                 {% for receita in receitas %}
                     <tr>
                         <td>{{ receita.descricao }}</td>
                         <td class="valor-receita">R$ {{ receita.valor }}</td>
+                        {# O filtro |date formata a data no padrão brasileiro. #}
                         <td>{{ receita.data_receita|date:"d/m/Y" }}</td>
                         <td>{{ receita.categoria }}</td>
                         <td class="acoes">
+                            {# receita.id_receita passa o ID da receita na URL. #}
                             <a href="{% url 'receita_editar' receita.id_receita %}" class="btn btn-sm btn-edit">Editar</a>
                             <a href="{% url 'receita_excluir' receita.id_receita %}" class="btn btn-sm btn-danger">Excluir</a>
                         </td>
@@ -36,6 +41,7 @@
             </tbody>
         </table>
     {% else %}
+        {# Mensagem exibida quando não há receitas cadastradas. #}
         <div class="empty-state">
             <p>Nenhuma receita cadastrada ainda.</p>
             <a href="{% url 'receita_cadastrar' %}" class="btn btn-primary">Cadastrar primeira receita</a>
