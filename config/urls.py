@@ -185,4 +185,46 @@ urlpatterns = [
         app_views.categoria_excluir,
         name='categoria_excluir'
     ),
+
+    # ── Metas financeiras ─────────────────────────
+    # Lista e cria/edita/exclui metas do usuário logado.
+    path(
+        'metas/',
+        app_views.meta_listar,
+        name='meta_listar'
+    ),
+
+    path(
+        'metas/cadastrar/',
+        app_views.meta_cadastrar,
+        name='meta_cadastrar'
+    ),
+
+    path(
+        'metas/editar/<int:id>/',
+        app_views.meta_editar,
+        name='meta_editar'
+    ),
+
+    path(
+        'metas/excluir/<int:id>/',
+        app_views.meta_excluir,
+        name='meta_excluir'
+    ),
+
+    # ── Planejamento mensal ───────────────────────
+    # Define o limite de gastos do mês e compara com as despesas.
+    path(
+        'planejamento/',
+        app_views.planejamento,
+        name='planejamento'
+    ),
+
+    # ── Histórico financeiro ──────────────────────
+    # Todas as movimentações do usuário com filtros.
+    path(
+        'historico/',
+        app_views.historico,
+        name='historico'
+    ),
 ]

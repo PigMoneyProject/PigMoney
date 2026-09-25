@@ -10,6 +10,9 @@
     {# Conecta este HTML ao arquivo de estilo principal do projeto. #}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
+    {# Define o ícone exibido na guia do navegador (favicon). #}
+    <link rel="icon" type="image/png" href="{% static 'img/icone_moedas.png' %}">
+
     {# {% block title %} define o título da aba do navegador. Cada página sobrescreve esse bloco. #}
     <title>{% block title %}PigMoney{% endblock %}</title>
 </head>
@@ -17,31 +20,46 @@
 <body>
 
     <header class="site-header">
-        <div class="container">
+        <div class="container cabecalho">
 
-            {# ── LOGO PIGMONEY ── #}
-            {# A logo se comporta de forma diferente dependendo da autenticação: #}
-            {# - Visitante (não logado): clica e vai para a Home. #}
-            {# - Usuário autenticado: clica e vai para o Dashboard (financeiro). #}
-            {# Isso é controlado por user.is_authenticated, disponível em todos os templates. #}
-            {% if user.is_authenticated %}
-                <a href="{% url 'financeiro_index' %}">
-                    <img
-                        src="{% static 'img/logo_pigmoney.png' %}"
-                        alt="PigMoney"
-                        class="logo-pigmoney"
-                    >
-                </a>
-            {% else %}
-                <a href="{% url 'home' %}">
-                    <img
-                        src="{% static 'img/logo_pigmoney.png' %}"
-                        alt="PigMoney"
-                        class="logo-pigmoney"
-                    >
-                </a>
-            {% endif %}
+            {# ── LINHA DE TOPO: LOGO + ÁREA DO USUÁRIO ── #}
+            <div class="header-topo">
 
+                {# ── LOGO ── #}
+                {# A logo se comporta de forma diferente dependendo da autenticação: #}
+                {# - Visitante (não logado): clica e vai para a Home. #}
+                {# - Usuário autenticado: clica e vai para o Dashboard (financeiro). #}
+                {# Isso é controlado por user.is_authenticated, disponível em todos os templates. #}
+                {% if user.is_authenticated %}
+                    <a href="{% url 'financeiro_index' %}">
+                        <img src="{% static 'img/logo_pigmoney.png' %}" alt="PigMoney" class="logo-pigmoney">
+                    </a>
+                {% else %}
+                    <a href="{% url 'home' %}">
+                        <img src="{% static 'img/logo_pigmoney.png' %}" alt="PigMoney" class="logo-pigmoney">
+                    </a>
+                {% endif %}
+
+                {# ── ÁREA DO USUÁRIO (Sair ou Entrar), no canto direito ── #}
+                {% if user.is_authenticated %}
+                    <div class="header-usuario">
+                        <span class="header-saudacao">Olá, {{ user.first_name|default:user.username }}!</span>
+                        {# Logout via POST por segurança — previne ataques CSRF. #}
+                        {# {% csrf_token %} gera um token de segurança obrigatório em formulários POST. #}
+                        <form action="{% url 'logout' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-login">Sair</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <div class="header-usuario">
+                        <a class="btn-login" href="{% url 'login' %}">Entrar</a>
+                    </div>
+                {% endif %}
+
+            </div>
+
+            {# ── MENU DE NAVEGAÇÃO ── #}
             <nav class="main-nav">
                 <ul>
                     {# {% if user.is_authenticated %} verifica se existe um usuário logado. #}
@@ -49,12 +67,14 @@
                     {% if user.is_authenticated %}
 
                         {# ── Menu do usuário autenticado ── #}
-                        {# Ordem: Início → Receitas → Despesas → Categorias → Perfil → Saiba Mais → [Admin] → Sair #}
-                        {# O botão Início usa a mesma rota do Dashboard porque representa a página principal do usuário autenticado. #}
+                        {# Ordem: Início → Receitas/Despesas/Categorias → Metas/Planejamento/Histórico → Perfil → Saiba Mais → [Admin] #}
                         <li><a href="{% url 'financeiro_index' %}">Início</a></li>
                         <li><a href="{% url 'receita_listar' %}">Receitas</a></li>
                         <li><a href="{% url 'despesa_listar' %}">Despesas</a></li>
                         <li><a href="{% url 'categoria_listar' %}">Categorias</a></li>
+                        <li><a href="{% url 'meta_listar' %}">Metas</a></li>
+                        <li><a href="{% url 'planejamento' %}">Planejamento</a></li>
+                        <li><a href="{% url 'historico' %}">Histórico</a></li>
                         <li><a href="{% url 'perfil' %}">Perfil</a></li>
                         <li><a href="{% url 'saiba_mais' %}">Saiba Mais</a></li>
 
@@ -67,24 +87,13 @@
                     {% else %}
 
                         {# ── Menu do visitante (não autenticado) ── #}
-                        <li><a href="{% url 'home' %}">Inicio</a></li>
+                        <li><a href="{% url 'home' %}">Início</a></li>
                         <li><a href="{% url 'saiba_mais' %}">Saiba Mais</a></li>
 
                     {% endif %}
                 </ul>
             </nav>
 
-            {# ── Botão de ação (Entrar ou Sair) ── #}
-            {% if user.is_authenticated %}
-                {# Logout via POST por segurança — previne ataques CSRF. #}
-                {# {% csrf_token %} gera um token de segurança obrigatório em formulários POST. #}
-                <form action="{% url 'logout' %}" method="post" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn-login" style="border:none;cursor:pointer;">Sair</button>
-                </form>
-            {% else %}
-                <a class="btn-login" href="{% url 'login' %}">Entrar</a>
-            {% endif %}
         </div>
     </header>
 
@@ -106,7 +115,9 @@
     </main>
 
     <footer class="site-footer">
-        <p>PigMoney &copy; 2026 — Controle suas financas de forma simples.</p>
+        <div class="container">
+            <p>PigMoney &copy; 2026 — Projeto acadêmico de controle de finanças.</p>
+        </div>
     </footer>
 
 </body>

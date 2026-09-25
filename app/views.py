@@ -31,6 +31,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 #   @user_passes_test → verifica uma regra de permissão customizada
 from django.contrib.auth.decorators import login_required, user_passes_test
 
+# Sum é utilizado pelo ORM do Django para somar valores no banco.
+# aggregate retorna um resultado agregado sobre vários registros.
+from django.db.models import Sum
+
 # Função login() do Django: autentica o usuário e cria a sessão.
 from django.contrib.auth import login
 
@@ -44,10 +48,32 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
 
 # Models do nosso projeto (estrutura dos dados no banco).
-from .models import Receita, Despesa, Categoria
+from .models import Receita, Despesa, Categoria, MetaFinanceira, PlanejamentoMensal
 
 # Forms do nosso projeto (formulários para criar/editar dados).
-from .forms import ReceitaForm, DespesaForm, CadastroForm, PerfilForm, CategoriaForm
+from .forms import (
+    ReceitaForm,
+    DespesaForm,
+    CadastroForm,
+    PerfilForm,
+    CategoriaForm,
+    MetaFinanceiraForm,
+    PlanejamentoMensalForm,
+)
+
+# date: fornece a data de hoje (date.today()) para filtrar por período.
+from datetime import date
+
+# json: converte listas/dicionários Python em texto JSON.
+# Utilizamos para enviar os dados dos gráficos ao JavaScript (Chart.js).
+import json
+
+# Lista com os nomes dos meses em português.
+# O índice 0 é deixado vazio porque os meses vão de 1 (Janeiro) a 12 (Dezembro).
+MESES_PT = [
+    '', 'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+]
 
 # Q permite criar consultas com OR (|) no Django ORM.
 # Sem Q, só seria possível filtrar com AND.
@@ -63,8 +89,271 @@ from django.db import models
 
 @login_required  # Somente usuários logados podem acessar esta página.
 def index(request):
-    """Exibe o painel principal do usuário (dashboard financeiro)."""
-    return render(request, 'financeiro/index.html')
+    """
+    Dashboard financeiro principal do usuário logado.
+
+    Exibe de forma organizada:
+    - Saldo atual (receitas - despesas)
+    - Total e quantidade de receitas
+    - Total e quantidade de despesas
+    - Movimentações recentes
+    - Metas financeiras
+    - Planejamento mensal do mês atual
+    - Dados para os gráficos (Chart.js)
+
+    IMPORTANTE: todos os dados são filtrados por request.user,
+    então cada usuário vê APENAS os próprios registros.
+    """
+
+    # ── RECEITAS ──
+    # Filtra somente as receitas do usuário autenticado.
+    # NÃO usar .all(), pois somaria dados de todos os usuários.
+    receitas_usuario = Receita.objects.filter(usuario=request.user)
+
+    # aggregate(Sum('valor')) soma o campo 'valor' de todos os registros encontrados.
+    # O resultado é um dicionário: {'total': Decimal('3000.00')} ou {'total': None}.
+    # O "or 0" garante que, se o usuário não tiver receitas, o valor seja 0 em vez de None.
+    total_receitas = receitas_usuario.aggregate(
+        total=Sum('valor')
+    )['total'] or 0
+
+    # count() conta quantos registros existem na consulta.
+    # Usamos para mostrar "quantidade de receitas cadastradas".
+    quantidade_receitas = receitas_usuario.count()
+
+    # ── DESPESAS ──
+    # Mesma lógica: filtra despesas apenas do usuário logado.
+    despesas_usuario = Despesa.objects.filter(usuario=request.user)
+
+    total_despesas = despesas_usuario.aggregate(
+        total=Sum('valor')
+    )['total'] or 0
+
+    quantidade_despesas = despesas_usuario.count()
+
+    # ── SALDO ──
+    # Cálculo simples: receitas menos despesas.
+    # Pode resultar em valor positivo, zero ou negativo.
+    saldo = total_receitas - total_despesas
+
+    # ── MOVIMENTAÇÕES RECENTES ──
+    # Combina receitas e despesas em uma única lista para exibir
+    # na seção "Movimentações recentes" do Dashboard.
+    movimentacoes = montar_movimentacoes(receitas_usuario, despesas_usuario)
+    # [:8] pega somente as 8 movimentações mais recentes.
+    movimentacoes_recentes = movimentacoes[:8]
+
+    # ── PERÍODO ATUAL (MÊS) ──
+    # data.today() retorna a data de hoje (ex: 2026-09-25).
+    hoje = date.today()
+
+    # Despesas do mês atual: usadas para comparar com o limite planejado.
+    despesas_mes = despesas_usuario.filter(
+        data_despesa__year=hoje.year,
+        data_despesa__month=hoje.month
+    )
+
+    # ── METAS (para exibir no Dashboard) ──
+    metas = MetaFinanceira.objects.filter(usuario=request.user)
+
+    # ── PLANEJAMENTO MENSAL DO MÊS ATUAL ──
+    planejamento_atual = PlanejamentoMensal.objects.filter(
+        usuario=request.user,
+        mes=hoje.month,
+        ano=hoje.year
+    ).first()  # .first() retorna o registro ou None (se não existir).
+
+    # Dados do planejamento para o template (ou 0 se não houver).
+    dados_planejamento = calcular_planejamento(planejamento_atual, despesas_mes)
+
+    # ── DADOS DOS GRÁFICOS (Chart.js) ──
+    # Chamamos funções auxiliares que preparam as listas de dados.
+    # json.dumps() converte a lista Python em texto JSON para o JavaScript ler.
+    dados_graficos = preparar_dados_graficos(request.user)
+
+    # Contexto: dicionário enviado ao template com os valores calculados.
+    contexto = {
+        'total_receitas': total_receitas,
+        'total_despesas': total_despesas,
+        'quantidade_receitas': quantidade_receitas,
+        'quantidade_despesas': quantidade_despesas,
+        'saldo': saldo,
+        'movimentacoes_recentes': movimentacoes_recentes,
+        'metas': metas,
+        'dados_planejamento': dados_planejamento,
+        'grafico_meses': dados_graficos['meses'],
+        'grafico_receitas': dados_graficos['receitas'],
+        'grafico_despesas': dados_graficos['despesas'],
+        'grafico_saldo_acumulado': dados_graficos['saldo_acumulado'],
+        'grafico_categorias_rotulos': dados_graficos['categorias_rotulos'],
+        'grafico_categorias_valores': dados_graficos['categorias_valores'],
+    }
+
+    return render(request, 'financeiro/index.html', contexto)
+
+
+def montar_movimentacoes(receitas, despesas):
+    """
+    Função auxiliar que combina receitas e despesas em UMA lista.
+
+    Cada item da lista é um dicionário com os campos comuns:
+    tipo, descricao, categoria, data e valor.
+
+    Retorno: lista ordenada da mais recente para a mais antiga.
+    """
+    movimentacoes = []
+
+    # Percorre cada receita e cria um dicionário padronizado.
+    for receita in receitas:
+        movimentacoes.append({
+            'tipo': 'Receita',
+            'descricao': receita.descricao,
+            'categoria': receita.categoria.nome_categoria,
+            'data': receita.data_receita,
+            'valor': receita.valor,
+        })
+
+    # Mesma lógica para despesas.
+    for despesa in despesas:
+        movimentacoes.append({
+            'tipo': 'Despesa',
+            'descricao': despesa.descricao,
+            'categoria': despesa.categoria.nome_categoria,
+            'data': despesa.data_despesa,
+            'valor': despesa.valor,
+        })
+
+    # Ordena pela chave 'data' em ordem decrescente (mais recente primeiro).
+    # reverse=True inverte a ordenação natural (que seria crescente).
+    movimentacoes.sort(key=lambda m: m['data'], reverse=True)
+
+    return movimentacoes
+
+
+def calcular_planejamento(planejamento, despesas_mes):
+    """
+    Função auxiliar que calcula os valores do planejamento mensal.
+
+    Recebe:
+    - planejamento: objeto PlanejamentoMensal (ou None)
+    - despesas_mes: queryset de despesas do mês selecionado
+
+    Retorna um dicionário com limite, gasto, restante e percentual.
+    """
+    # Se não existe planejamento, o limite é 0 (não definido).
+    limite = planejamento.limite_gastos if planejamento else 0
+
+    total_gasto = despesas_mes.aggregate(
+        total=Sum('valor')
+    )['total'] or 0
+
+    # Restante = limite menos o que já se gastou no mês.
+    restante = limite - total_gasto
+
+    # Percentual do limite que já foi utilizado.
+    # Proteção contra divisão por zero (limite = 0).
+    # round(..., 1) limita a 1 casa decimal para não exibir
+    # dízimas longas (ex: 62.6666...).
+    if limite > 0:
+        percentual_utilizado = round(
+            (total_gasto / limite) * 100, 1
+        )
+    else:
+        percentual_utilizado = 0
+
+    return {
+        'limite': limite,
+        'total_gasto': total_gasto,
+        'restante': restante,
+        'percentual_utilizado': percentual_utilizado,
+    }
+
+
+def preparar_dados_graficos(usuario):
+    """
+    Função auxiliar que prepara os dados reais para os gráficos.
+
+    Retorna um dicionário com listas JSON já serializadas:
+    - meses: rótulos dos últimos 6 meses (ex: "Set/2026")
+    - receitas: total de receitas por mês
+    - despesas: total de despesas por mês
+    - saldo_acumulado: saldo acumulado mês a mês
+    - categorias_rotulos / categorias_valores: despesas por categoria
+
+    IMPORTANTE: todos os dados são filtrados pelo usuário logado
+    e vêm do banco de dados (nada de valores fictícios).
+    """
+    hoje = date.today()
+
+    # ── DESPESAS POR CATEGORIA (gráfico de pizza) ──
+    # Agrupa as despesas do usuário por categoria e soma os valores.
+    # Usamos o ORM values() + annotate() para agrupar no banco de dados.
+    despesas_por_categoria = (
+        Despesa.objects
+        .filter(usuario=usuario)
+        .values('categoria__nome_categoria')  # Agrupa pelo nome da categoria.
+        .annotate(total=Sum('valor'))          # Soma os valores de cada grupo.
+    )
+
+    # Separamos em duas listas: rótulos (nomes) e valores (totais).
+    categorias_rotulos = []
+    categorias_valores = []
+
+    for item in despesas_por_categoria:
+        categorias_rotulos.append(item['categoria__nome_categoria'])
+        # float() converte Decimal para número "comum" (necessário p/ JSON).
+        categorias_valores.append(float(item['total']))
+
+    # ── EVOLUÇÃO NOS ÚLTIMOS 6 MESES ──
+    # Montamos uma lista com os (mês, ano) dos últimos 6 meses,
+    # começando do mais antigo até o atual, para exibir nos eixos.
+    meses_lista = []
+    for i in range(5, -1, -1):  # 5, 4, 3, 2, 1, 0
+        # Para calcular o mês anterior, subtraímos meses de hoje.
+        # Total de meses desde o ano 1: (ano * 12) + mes - 1.
+        indice = (hoje.year * 12) + (hoje.month - 1) - i
+        ano = indice // 12
+        mes = (indice % 12) + 1
+        meses_lista.append((mes, ano))
+
+    meses_rotulos = []
+    receitas_meses = []
+    despesas_meses = []
+    saldo_acumulado = []
+    saldo_soma = 0
+
+    # Para cada mês dos últimos 6, calculamos receitas e despesas.
+    for mes, ano in meses_lista:
+        # MESES_PT[mes] retorna o nome do mês em português (ex: 'Setembro').
+        # [:3] mantém apenas as 3 primeiras letras (ex: 'Set').
+        meses_rotulos.append(f'{MESES_PT[mes][:3]}/{ano}')
+
+        total_rec = Receita.objects.filter(
+            usuario=usuario, data_receita__month=mes, data_receita__year=ano
+        ).aggregate(total=Sum('valor'))['total'] or 0
+
+        total_des = Despesa.objects.filter(
+            usuario=usuario, data_despesa__month=mes, data_despesa__year=ano
+        ).aggregate(total=Sum('valor'))['total'] or 0
+
+        receitas_meses.append(float(total_rec))
+        despesas_meses.append(float(total_des))
+
+        # Saldo acumulado: soma o saldo de cada mês ao anterior.
+        # Exemplo: saldo dos meses 1+2, depois 1+2+3, e assim por diante.
+        saldo_soma += float(total_rec - total_des)
+        saldo_acumulado.append(saldo_soma)
+
+    # json.dumps() transforma as listas Python em texto JSON.
+    # No template, usamos |safe para o navegador interpretar como código.
+    return {
+        'meses': json.dumps(meses_rotulos),
+        'receitas': json.dumps(receitas_meses),
+        'despesas': json.dumps(despesas_meses),
+        'saldo_acumulado': json.dumps(saldo_acumulado),
+        'categorias_rotulos': json.dumps(categorias_rotulos),
+        'categorias_valores': json.dumps(categorias_valores),
+    }
 
 
 # ==========================================
@@ -460,4 +749,247 @@ def categoria_excluir(request, id):
 
     return render(request, 'financeiro/categorias/excluir.html', {
         'categoria': categoria,
+    })
+
+
+# ==========================================
+# CRUD DE METAS FINANCEIRAS
+# ==========================================
+# Mesmo padrão de segurança dos demais CRUDs:
+# toda view filtra por usuario=request.user. Assim, um usuário
+# nunca consegue ver, editar ou excluir uma meta de outro usuário,
+# mesmo que digite o ID correto na URL.
+
+@login_required
+def meta_listar(request):
+    """
+    Lista todas as metas financeiras do usuário logado.
+    """
+    metas = MetaFinanceira.objects.filter(usuario=request.user)
+    return render(request, 'financeiro/metas/listar.html', {'metas': metas})
+
+
+@login_required
+def meta_cadastrar(request):
+    """
+    Cadastra uma nova meta financeira.
+
+    commit=False cria o objeto sem salvar, permitindo que
+    definamos meta.usuario = request.user antes do save().
+    """
+    if request.method == 'POST':
+        form = MetaFinanceiraForm(request.POST)
+        if form.is_valid():
+            meta = form.save(commit=False)
+            meta.usuario = request.user  # Associa a meta ao usuário logado.
+            meta.save()
+            messages.success(request, 'Meta criada com sucesso!')
+            return redirect('meta_listar')
+    else:
+        form = MetaFinanceiraForm()
+
+    return render(request, 'financeiro/metas/cadastrar.html', {'form': form})
+
+
+@login_required
+def meta_editar(request, id):
+    """
+    Edita uma meta existente.
+
+    get_object_or_404(MetaFinanceira, id_meta=id, usuario=request.user):
+    busca a meta pelo ID E pelo usuário logado. Se a meta pertencer
+    a outro usuário, retorna 404 (não encontrado).
+    """
+    meta = get_object_or_404(
+        MetaFinanceira,
+        id_meta=id,
+        usuario=request.user
+    )
+
+    if request.method == 'POST':
+        form = MetaFinanceiraForm(request.POST, instance=meta)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Meta atualizada com sucesso!')
+            return redirect('meta_listar')
+    else:
+        form = MetaFinanceiraForm(instance=meta)
+
+    return render(request, 'financeiro/metas/editar.html', {
+        'form': form,
+        'meta': meta,
+    })
+
+
+@login_required
+def meta_excluir(request, id):
+    """
+    Exclui uma meta após confirmação do usuário.
+    """
+    meta = get_object_or_404(
+        MetaFinanceira,
+        id_meta=id,
+        usuario=request.user
+    )
+
+    if request.method == 'POST':
+        meta.delete()
+        messages.success(request, 'Meta excluida com sucesso!')
+        return redirect('meta_listar')
+
+    return render(request, 'financeiro/metas/excluir.html', {'meta': meta})
+
+
+# ==========================================
+# PLANEJAMENTO MENSAL
+# ==========================================
+
+@login_required
+def planejamento(request):
+    """
+    Página de planejamento financeiro mensal.
+
+    O usuário define um limite de gastos para o mês e o sistema
+    compara esse limite com o total de despesas do mês selecionado.
+
+    Fluxo:
+    1. Lê o mês/ano escolhido (GET) ou usa o mês atual.
+    2. Busca (ou cria) o planejamento do usuário para aquele mês.
+    3. Calcula: limite, total gasto, restante e percentual utilizado.
+    """
+    hoje = date.today()
+
+    # ── MÊS SELECIONADO ──
+    # O formulário de filtro envia 'mes_ano' no formato "YYYY-MM".
+    # Se vier vazio (primeira visita), usamos o mês atual.
+    mes_ano = request.GET.get('mes_ano', '')
+
+    if mes_ano:
+        anos_mes = mes_ano.split('-')
+        ano = int(anos_mes[0])
+        mes = int(anos_mes[1])
+    else:
+        ano = hoje.year
+        mes = hoje.month
+
+    # Converte o número do mês para o nome (ex: 9 -> 'Setembro').
+    nome_mes = MESES_PT[mes]
+    # Meses em português: lista com nome de cada mês para o seletor.
+    meses_lista = [{'numero': n, 'nome': MESES_PT[n]}
+                   for n in range(1, 13)]
+
+    # ── BUSCA O PLANEJAMENTO EXISTENTE ──
+    # .first() retorna o registro ou None. Quando não existe,
+    # o formulário aparece vazio para o usuário definir o limite.
+    planejamento_existente = PlanejamentoMensal.objects.filter(
+        usuario=request.user,
+        mes=mes,
+        ano=ano
+    ).first()
+
+    # ── FORMULARIO (POST) ──
+    # instance=planejamento_existente: se já existe, edita; senão, cria novo.
+    if request.method == 'POST':
+        form = PlanejamentoMensalForm(
+            request.POST,
+            instance=planejamento_existente
+        )
+        if form.is_valid():
+            planejamento_salvo = form.save(commit=False)
+            planejamento_salvo.usuario = request.user
+            planejamento_salvo.mes = mes
+            planejamento_salvo.ano = ano
+            planejamento_salvo.save()
+            messages.success(request, 'Planejamento salvo com sucesso!')
+            return redirect('planejamento')
+    else:
+        form = PlanejamentoMensalForm(instance=planejamento_existente)
+
+    # ── DESPESAS DO MÊS SELECIONADO ──
+    # Filtra despesas do usuário logado dentro do mês/ano escolhido.
+    despesas_mes = Despesa.objects.filter(
+        usuario=request.user,
+        data_despesa__year=ano,
+        data_despesa__month=mes
+    )
+
+    # Cálculos do planejamento (limite vs gasto).
+    dados = calcular_planejamento(planejamento_existente, despesas_mes)
+
+    return render(request, 'financeiro/planejamento/index.html', {
+        'form': form,
+        'dados': dados,
+        'nome_mes': nome_mes,
+        'mes': mes,
+        'ano': ano,
+        'meses_lista': meses_lista,
+    })
+
+
+# ==========================================
+# HISTORICO FINANCEIRO
+# ==========================================
+
+@login_required
+def historico(request):
+    """
+    Página de histórico financeiro.
+
+    Exibe TODAS as movimentações (receitas e despesas) do usuário,
+    da mais recente para a mais antiga, com filtros opcionais:
+    - Período (data inicial e final)
+    - Tipo (Receita ou Despesa)
+    - Categoria
+
+    Todos os filtros consideram apenas usuário=request.user.
+    """
+    # ── FILTROS VINDOS DA URL (GET) ──
+    # request.GET.get() lê os parâmetros enviados pelo formulário.
+    tipo = request.GET.get('tipo', '')
+    categoria_id = request.GET.get('categoria', '')
+    data_inicio = request.GET.get('data_inicio', '')
+    data_fim = request.GET.get('data_fim', '')
+
+    # ── CONSULTAS BASE (sempre filtradas pelo usuário) ──
+    receitas = Receita.objects.filter(usuario=request.user)
+    despesas = Despesa.objects.filter(usuario=request.user)
+
+    # ── APLICA FILTROS ──
+    # Filtro por categoria (se o usuário escolheu uma).
+    if categoria_id:
+        receitas = receitas.filter(categoria_id=categoria_id)
+        despesas = despesas.filter(categoria_id=categoria_id)
+
+    # Filtro por período: colunas ">=" (maior ou igual) e "<=" (menor ou igual).
+    if data_inicio:
+        receitas = receitas.filter(data_receita__gte=data_inicio)
+        despesas = despesas.filter(data_despesa__gte=data_inicio)
+
+    if data_fim:
+        receitas = receitas.filter(data_receita__lte=data_fim)
+        despesas = despesas.filter(data_despesa__lte=data_fim)
+
+    # Combina receitas e despesas em uma única lista ordenada.
+    movimentacoes = montar_movimentacoes(receitas, despesas)
+
+    # Filtro por tipo: mantém apenas itens do tipo escolhido.
+    if tipo == 'Receita':
+        movimentacoes = [m for m in movimentacoes if m['tipo'] == 'Receita']
+    elif tipo == 'Despesa':
+        movimentacoes = [m for m in movimentacoes if m['tipo'] == 'Despesa']
+
+    # Categorias disponíveis para o filtro (padrão + pessoais do usuário).
+    categorias = Categoria.objects.filter(
+        Q(usuario__isnull=True) | Q(usuario=request.user)
+    )
+
+    return render(request, 'financeiro/historico.html', {
+        'movimentacoes': movimentacoes,
+        'categorias': categorias,
+        # Enviamos os filtros atuais de volta ao template para que
+        # os campos do formulário mantenham os valores escolhidos.
+        'filtro_tipo': tipo,
+        'filtro_categoria': categoria_id,
+        'filtro_data_inicio': data_inicio,
+        'filtro_data_fim': data_fim,
     })

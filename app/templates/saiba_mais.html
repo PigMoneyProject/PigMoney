@@ -5,93 +5,76 @@
 
 {% block content %}
 
-    <h1 class="page-title">Conheça o PigMoney</h1>
+    <h1 class="page-title">Sobre o PigMoney</h1>
     <p class="page-description">
-        O PigMoney é uma plataforma web desenvolvida para auxiliar na
-        organização das finanças pessoais, permitindo que o usuário
-        acompanhe suas receitas, despesas e outras informações
-        financeiras de forma simples e organizada.
+        O PigMoney é um sistema simples para registrar receitas e despesas
+        e acompanhar o saldo, as metas e o planejamento mensal.
     </p>
 
     {# ── Funcionalidades já implementadas ── #}
-    <h2 class="saiba-subtitle">Funcionalidades Disponíveis</h2>
+    <h2 class="saiba-subtitle">O que o sistema faz</h2>
 
     <div class="cards">
         <div class="card">
             <h2>Controle de Receitas</h2>
             <p>
-                Cadastre, visualize, edite e exclua valores recebidos,
-                como salários, pagamentos e outras fontes de renda.
+                Cadastro e edição de valores recebidos, como salário,
+                pagamentos e outras fontes de renda.
             </p>
         </div>
         <div class="card">
             <h2>Controle de Despesas</h2>
             <p>
-                Registre e acompanhe seus gastos, facilitando a
-                identificação de onde o dinheiro está sendo utilizado.
+                Registro dos gastos para acompanhar onde o dinheiro é usado.
             </p>
         </div>
         <div class="card">
             <h2>Categorias</h2>
             <p>
-                Organize suas movimentações em categorias, facilitando
-                a organização financeira do dia a dia.
+                As movimentações podem ser organizadas por categoria,
+                facilitando a consulta e os relatórios.
             </p>
         </div>
         <div class="card">
-            <h2>Dashboard Financeiro</h2>
-            <p>
-                Acesse um painel que reúne informações importantes sobre
-                a situação financeira do usuário.
-            </p>
-        </div>
-    </div>
-
-    {# ── Funcionalidades previstas (planejadas) ── #}
-    <h2 class="saiba-subtitle">Funcionalidades Planejadas</h2>
-
-    <div class="cards">
-        <div class="card card-planejado">
             <h2>Saldo</h2>
             <p>
-                O projeto prevê o cálculo automático do saldo utilizing
-                as receitas e despesas cadastradas.
+                O saldo é calculado automaticamente como a diferença
+                entre receitas e despesas.
             </p>
         </div>
-        <div class="card card-planejado">
+        <div class="card">
             <h2>Metas Financeiras</h2>
             <p>
-                O PigMoney contará com a criação e acompanhamento de
-                objetivos financeiros pessoais.
+                Criação e acompanhamento de objetivos de economia, com
+                acompanhamento do percentual atingido.
             </p>
         </div>
-        <div class="card card-planejado">
-            <h2>Planejamento Financeiro</h2>
+        <div class="card">
+            <h2>Planejamento Mensal</h2>
             <p>
-                A plataforma poderá auxiliar o usuário a organizar e
-                planejar seus gastos mensais.
+                Definição de um limite de gastos para o mês e comparação
+                com o total já utilizado.
             </p>
         </div>
-        <div class="card card-planejado">
+        <div class="card">
             <h2>Histórico Financeiro</h2>
             <p>
-                O projeto prevê a consulta de movimentações financeiras
-                realizadas anteriormente.
+                Consulta de todas as movimentações, com filtros por
+                tipo, categoria e período.
             </p>
         </div>
-        <div class="card card-planejado">
-            <h2>Relatórios</h2>
+        <div class="card">
+            <h2>Gráficos</h2>
             <p>
-                As informações cadastradas poderão ser apresentadas
-                através de gráficos e relatórios para facilitar a
-                compreensão das finanças.
+                O painel apresenta gráficos com receitas, despesas e
+                despesas por categoria.
             </p>
         </div>
     </div>
 
     {# ── Botão final de ação ── #}
     <div class="home-actions" style="margin-top: 2.5rem;">
-        <a href="{% url 'login' %}" class="btn btn-primary">Começar agora</a>
+        <a href="{% url 'login' %}" class="btn btn-primary">Entrar</a>
     </div>
 
 {% endblock %}

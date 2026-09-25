@@ -23,7 +23,7 @@ from django.contrib.auth.forms import UserCreationForm
 
 from django.contrib.auth.models import User
 
-from .models import Receita, Despesa, Categoria
+from .models import Receita, Despesa, Categoria, MetaFinanceira, PlanejamentoMensal
 
 
 # ==========================================
@@ -433,6 +433,142 @@ class DespesaForm(forms.ModelForm):
         if valor is None or valor <= Decimal('0.00'):
             raise forms.ValidationError(
                 'O valor deve ser maior que zero.'
+            )
+
+        return valor
+
+
+# ==========================================
+# FORMULARIO DE METAS FINANCEIRAS
+# ==========================================
+
+class MetaFinanceiraForm(forms.ModelForm):
+    """
+    Formulario para cadastrar e editar metas financeiras.
+
+    O campo 'usuario' NAO aparece aqui: ele e definido na View
+    com request.user, seguindo o mesmo padrao de Receita e Despesa.
+    """
+
+    class Meta:
+        model = MetaFinanceira
+
+        fields = [
+            'nome_meta',
+            'valor_objetivo',
+            'valor_atual',
+            'prazo',
+        ]
+
+        labels = {
+            'nome_meta': 'Nome da meta',
+            'valor_objetivo': 'Valor objetivo (R$)',
+            'valor_atual': 'Valor atual (R$)',
+            'prazo': 'Prazo',
+        }
+
+        widgets = {
+            'nome_meta': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ex: Comprar um notebook',
+            }),
+
+            'valor_objetivo': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0.01',
+                'placeholder': '0,00',
+            }),
+
+            'valor_atual': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0',
+                'placeholder': '0,00',
+            }),
+
+            'prazo': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+            }),
+        }
+
+    def clean_valor_objetivo(self):
+        """
+        Valida o valor objetivo da meta.
+
+        Regra: deve ser maior que zero. Uma meta com objetivo
+        R$ 0,00 (ou negativo) nao faz sentido e tambem quebraria
+        o calculo do percentual (divisao por zero).
+        """
+        valor = self.cleaned_data.get('valor_objetivo')
+
+        if valor is None or valor <= Decimal('0.00'):
+            raise forms.ValidationError(
+                'O valor objetivo deve ser maior que zero.'
+            )
+
+        return valor
+
+    def clean_valor_atual(self):
+        """
+        Valida o valor atual da meta.
+
+        Regra: nao pode ser negativo (nao existe -R$ 50,00 juntados).
+        """
+        valor = self.cleaned_data.get('valor_atual')
+
+        if valor is None or valor < Decimal('0.00'):
+            raise forms.ValidationError(
+                'O valor atual nao pode ser negativo.'
+            )
+
+        return valor
+
+
+# ==========================================
+# FORMULARIO DE PLANEJAMENTO MENSAL
+# ==========================================
+
+class PlanejamentoMensalForm(forms.ModelForm):
+    """
+    Formulario para definir (ou atualizar) o limite de gastos
+    de um mes especifico.
+
+    O usuario escolhe o mes/ano na pagina e aqui apenas informa
+    o valor limite. Mes, ano e usuario sao preenchidos na View.
+    """
+
+    class Meta:
+        model = PlanejamentoMensal
+
+        fields = ['limite_gastos']
+
+        labels = {
+            'limite_gastos': 'Limite de gastos do mes (R$)',
+        }
+
+        widgets = {
+            'limite_gastos': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0.01',
+                'placeholder': '0,00',
+            }),
+        }
+
+    def clean_limite_gastos(self):
+        """
+        Valida o limite de gastos.
+
+        Regra: deve ser maior que zero. Um limite 0 ou negativo
+        nao faz sentido e quebraria o calculo do percentual utilizado.
+        """
+        valor = self.cleaned_data.get('limite_gastos')
+
+        if valor is None or valor <= Decimal('0.00'):
+            raise forms.ValidationError(
+                'O limite deve ser maior que zero.'
             )
 
         return valor

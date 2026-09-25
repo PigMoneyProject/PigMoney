@@ -1,10 +1,10 @@
 /* ==========================================
-   VARIÁVEIS DE CORES — IDENTIDADE VISUAL PIGMONEY
+   ESTILO DO PIGMONEY
    ==========================================
-   Paleta dourada/amarela que remete a dinheiro,
-   moedas e organização financeira.
-   Cores neutras (branco, preto, cinza) garantem
-   contraste e legibilidade.
+   Estilo simples, pensado para ser discreto:
+   fundo claro, cantos pouco arredondados,
+   poucas sombras e cores neutras com toques
+   de dourado. Nada de efeitos chamativos.
    ========================================== */
 
 :root {
@@ -14,7 +14,7 @@
     --amarelo-claro: #FEF3C7;
     --amarelo-muito-claro: #FFFBEB;
 
-    /* ── Cores de fundo ── */
+    /* ── Cores de fundo (tom de papel) ── */
     --cor-fundo: #FFFEF7;
     --cor-fundo-card: #FFFFFF;
 
@@ -23,17 +23,16 @@
     --cor-texto-suave: #6B6B6B;
     --cor-branca: #FFFFFF;
 
-    /* ── Bordas e sombras ── */
+    /* ── Bordas ── */
     --cor-borda: #F0E4BF;
-    --sombra: 0 2px 8px rgba(43, 43, 43, 0.08);
-    --raio: 10px;
+    --raio: 6px;
 
     /* ── Cores de status ── */
     --cor-sucesso: #2e7d32;
     --cor-sucesso-bg: #e8f5e9;
     --cor-erro: #c62828;
     --cor-erro-bg: #fdecea;
-    --cor-editar: #1565c0;
+    --cor-editar: #1a4f8a;
     --cor-perigo: #c62828;
 }
 
@@ -44,52 +43,66 @@
 }
 
 body {
-    font-family: "Segoe UI", Arial, sans-serif;
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
     background-color: var(--cor-fundo);
     color: var(--cor-texto);
+    font-size: 16px;
+    line-height: 1.55;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
+/* Todas as fontes na mesma família, sem serifa. */
+h1, h2, h3 {
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    font-weight: 600;
+    color: var(--cor-texto);
+}
+
 /* ==========================================
-   CABEÇALHO E MENU DE NAVEGAÇÃO
+   CABEÇALHO
    ==========================================
-   Navbar com fundo dourado. Utiliza flexbox
-   para alinhar logo, links e botão de login.
-   A logo é uma imagem carregada via {% static %}.
+   Cabeçalho branco, discreto, com uma linha
+   fina embaixo. Logo, menu e usuário na
+   mesma linha quando há espaço.
    ========================================== */
 
 .site-header {
     background-color: var(--dourado-principal);
-    padding: 0.75rem 2rem;
+    border-bottom: 2px solid var(--dourado-escuro);
+    padding: 0.6rem 0;
 }
 
-.site-header .container {
+.cabecalho {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.header-topo {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
+    flex-wrap: wrap;
 }
 
-/* Classe da logo (imagem) na Navbar. */
 .logo-pigmoney {
-    height: 45px;
+    height: 40px;
     width: auto;
     object-fit: contain;
     display: block;
 }
 
-.brand {
-    color: var(--cor-texto);
-    font-size: 1.5rem;
-    font-weight: 700;
-    text-decoration: none;
+.main-nav {
+    border-top: 1px solid var(--dourado-escuro);
+    padding-top: 0.65rem;
 }
 
 .main-nav ul {
     display: flex;
-    gap: 1rem;
+    gap: 0.15rem;
     list-style: none;
     flex-wrap: wrap;
     align-items: center;
@@ -98,49 +111,70 @@ body {
 .main-nav a {
     color: var(--cor-texto);
     text-decoration: none;
-    padding: 0.4rem 0.65rem;
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 0.88rem;
-    transition: background-color 0.15s ease;
+    padding: 0.3rem 0.55rem;
+    font-size: 0.92rem;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.12s ease, color 0.12s ease;
 }
 
 .main-nav a:hover,
 .main-nav a:focus {
-    background-color: var(--dourado-escuro);
-    color: var(--cor-branca);
+    color: var(--dourado-escuro);
+    border-bottom-color: var(--dourado-escuro);
+}
+
+.header-usuario {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.header-saudacao {
+    font-size: 0.9rem;
+    color: var(--cor-texto-suave);
 }
 
 .btn-login {
     background-color: var(--cor-branca);
     color: var(--dourado-escuro);
-    border: none;
-    border-radius: 6px;
-    padding: 0.45rem 1.1rem;
-    font-weight: 700;
-    font-size: 0.95rem;
+    border: 1px solid var(--dourado-escuro);
+    border-radius: var(--raio);
+    padding: 0.35rem 0.9rem;
+    font-weight: 600;
+    font-size: 0.9rem;
     cursor: pointer;
     text-decoration: none;
     display: inline-block;
-    transition: background-color 0.15s ease;
+    font-family: inherit;
+    transition: background-color 0.12s ease, color 0.12s ease;
 }
 
 .btn-login:hover {
-    background-color: var(--amarelo-claro);
+    background-color: var(--dourado-escuro);
+    color: var(--cor-branca);
 }
 
 /* ==========================================
-   CONTAINER E ÁREA DE CONTEÚDO
-   ==========================================
-   O container centraliza o conteúdo com
-   largura máxima de 960px.
+   CONTEÚDO
+   ========================================== */
+
+.site-header .container {
+    padding: 0.6rem 1.5rem;
+}
+
+.site-footer .container {
+    padding: 1rem 1.5rem;
+}
+
+/* ==========================================
+   CONTEÚDO
    ========================================== */
 
 .container {
     width: 100%;
-    max-width: 960px;
+    max-width: 980px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 1.5rem 1.5rem;
 }
 
 .page {
@@ -148,18 +182,34 @@ body {
 }
 
 .page-title {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-    color: var(--cor-texto);
+    font-size: 1.7rem;
+    margin-bottom: 0.35rem;
 }
 
 .page-description {
     color: var(--cor-texto-suave);
-    margin-bottom: 2rem;
-    font-size: 1.1rem;
+    margin-bottom: 1.75rem;
 }
 
-/* ── Centraliza texto e reduz espaço nas páginas de autenticação ── */
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.page-header .page-title {
+    margin-bottom: 0;
+}
+
+.page-subtitle {
+    font-size: 1.15rem;
+    margin-bottom: 0.75rem;
+    color: var(--cor-texto-suave);
+}
+
 .auth-content {
     text-align: center;
     max-width: 600px;
@@ -171,205 +221,269 @@ body {
 }
 
 .auth-content .page-description {
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
 }
 
 .auth-content .alert {
     text-align: left;
 }
 
-.page-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 2rem;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.page-header .page-title {
-    margin-bottom: 0;
-}
-
 /* ==========================================
-   TELA INICIAL (HOME)
-   ==========================================
-   Centraliza conteúdo e adiciona
-   espaçamento nos botões de ação.
+   HOME
    ========================================== */
 
 .home-hero {
     text-align: center;
-    margin-bottom: 2rem;
+    margin: 2rem 0 1.5rem;
 }
 
 .home-hero .page-title {
-    font-size: 2.5rem;
+    font-size: 2rem;
 }
 
 .home-text {
     color: var(--cor-texto-suave);
-    font-size: 1.1rem;
-    max-width: 600px;
+    max-width: 560px;
     margin: 0 auto;
-    line-height: 1.6;
 }
 
 .home-actions {
     display: flex;
     justify-content: center;
-    gap: 1rem;
+    gap: 0.75rem;
     margin-top: 1.5rem;
+    flex-wrap: wrap;
 }
 
 /* ==========================================
-   PÁGINA "SAIBA MAIS"
+   RESUMO DO DASHBOARD
    ==========================================
-   Subtítulos e cards de funcionalidades
-   planejadas (com borda tracejada).
+   Um bloco único: saldo em destaque à
+   esquerda e receitas/despesas em linhas.
    ========================================== */
 
-.saiba-subtitle {
-    font-size: 1.4rem;
-    margin-top: 2.5rem;
-    margin-bottom: 1rem;
-    color: var(--dourado-escuro);
+.resumo-geral {
+    background-color: var(--cor-fundo-card);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
 }
 
-.card-planejado {
-    opacity: 0.8;
-    border-style: dashed;
+.resumo-saldo {
+    flex: 1 1 220px;
 }
 
-/* ==========================================
-   LINK DA PÁGINA DE LOGIN
-   ==========================================
-   Estilo do texto "Não tem uma conta? Crie uma"
-   exibido abaixo do formulário de login.
-   ========================================== */
-
-.login-link {
-    text-align: center;
-    margin-top: 1.25rem;
+.resumo-saldo h2 {
+    font-size: 1rem;
     color: var(--cor-texto-suave);
-    font-size: 0.95rem;
+    margin-bottom: 0.4rem;
+    font-family: "Segoe UI", Arial, sans-serif;
 }
 
-.login-link a {
-    color: var(--dourado-escuro);
+.resumo-valor {
+    font-size: 2.2rem;
     font-weight: 700;
-    text-decoration: none;
+    line-height: 1.2;
 }
 
-.login-link a:hover {
-    text-decoration: underline;
+.resumo-nota {
+    color: var(--cor-texto-suave);
+    font-size: 0.85rem;
+    margin-top: 0.3rem;
+}
+
+.resumo-lista {
+    flex: 1 1 260px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.resumo-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid var(--cor-borda);
+}
+
+.resumo-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.resumo-rotulo {
+    color: var(--cor-texto-suave);
+}
+
+.resumo-campo {
+    text-align: right;
+}
+
+.resumo-campo small {
+    display: block;
+    color: var(--cor-texto-suave);
+    font-size: 0.8rem;
+}
+
+/* Cores de saldo (apenas no texto, sem fundo colorido). */
+.cor-positiva { color: var(--cor-sucesso); }
+.cor-negativa { color: var(--cor-erro); }
+.cor-neutra { color: var(--cor-texto); }
+
+/* ==========================================
+   SEÇÕES DO DASHBOARD E PÁGINAS
+   ========================================== */
+
+.card-secao {
+    background-color: var(--cor-fundo-card);
+    border: 1px solid var(--cor-borda);
+    border-left: 3px solid var(--dourado-escuro);
+    border-radius: var(--raio);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.75rem;
+}
+
+.card-secao-titulo {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.card-secao-sub {
+    color: var(--cor-texto-suave);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.card-secao-mini {
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio);
+    padding: 0.9rem;
+    text-align: center;
+    background-color: var(--cor-fundo);
+}
+
+.card-secao-mini span {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--cor-texto-suave);
+    margin-bottom: 0.3rem;
+}
+
+.card-secao-mini strong {
+    font-size: 1.1rem;
 }
 
 /* ==========================================
-   CARDS
-   ==========================================
-   Caixas informativas utilizadas na Home,
-   Dashboard, Perfil e outras páginas.
-   Utilizam CSS Grid para se adaptar a
-   diferentes tamanhos de tela.
+   CARDS GENÉRICOS (SAIBA MAIS, PERFIL)
    ========================================== */
 
 .cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.25rem;
+    gap: 1rem;
 }
 
 .card {
     background-color: var(--cor-fundo-card);
     border: 1px solid var(--cor-borda);
     border-radius: var(--raio);
-    box-shadow: var(--sombra);
-    padding: 1.5rem;
+    padding: 1.25rem;
     display: block;
     text-decoration: none;
     color: var(--cor-texto);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .card:hover,
 .card:focus {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 14px rgba(212, 160, 23, 0.18);
     border-color: var(--dourado-principal);
 }
 
 .card h2 {
-    font-size: 1.15rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    margin-bottom: 0.4rem;
 }
 
 .card p {
     color: var(--cor-texto-suave);
-    font-size: 0.95rem;
+    font-size: 0.92rem;
+}
+
+.card-planejado {
+    opacity: 0.8;
+}
+
+/* Subtítulo das seções da página "Saiba Mais". */
+.saiba-subtitle {
+    font-size: 1.3rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: var(--dourado-escuro);
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
 }
 
 /* ==========================================
    MENSAGENS (ALERTAS)
-   ==========================================
-   Mensagens de sucesso mantêm verde (função
-   semântica). Erros mantêm vermelho.
    ========================================== */
 
 .alert {
-    padding: 0.85rem 1.25rem;
+    padding: 0.75rem 1.1rem;
+    border: 1px solid;
     border-radius: var(--raio);
     margin-bottom: 1.5rem;
-    font-weight: 600;
     font-size: 0.95rem;
 }
 
 .alert-success {
     background-color: var(--cor-sucesso-bg);
     color: var(--cor-sucesso);
-    border: 1px solid #a5d6a7;
+    border-color: #B9D8BE;
 }
 
 .alert-error {
     background-color: var(--cor-erro-bg);
     color: var(--cor-erro);
-    border: 1px solid #ef9a9a;
+    border-color: #E7BEBE;
 }
 
 /* ==========================================
-   TABELAS (RECEITAS, DESPESAS, CATEGORIAS)
+   TABELAS
    ==========================================
-   Cabeçalho dourado, linhas com efeito hover
-   em tom amarelo claro.
+   Apenas linhas horizontais, como num
+   relatório impresso. Sem caixa externa.
    ========================================== */
 
 .table {
     width: 100%;
     border-collapse: collapse;
-    background-color: var(--cor-fundo-card);
-    border-radius: var(--raio);
-    overflow: hidden;
-    box-shadow: var(--sombra);
     margin-bottom: 1.5rem;
+    background-color: var(--cor-fundo-card);
 }
 
 .table thead {
-    background-color: var(--dourado-principal);
-    color: var(--cor-texto);
+    border-bottom: 2px solid var(--dourado-escuro);
+    background-color: var(--amarelo-claro);
 }
 
-.table th,
-.table td {
-    padding: 0.85rem 1rem;
+.table th {
     text-align: left;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    padding: 0.65rem 0.9rem;
+    letter-spacing: 0.02em;
 }
 
-.table tbody tr {
+.table td {
+    padding: 0.75rem 0.9rem;
+    font-size: 0.95rem;
     border-bottom: 1px solid var(--cor-borda);
 }
 
-.table tbody tr:last-child {
+.table tbody tr:last-child td {
     border-bottom: none;
 }
 
@@ -389,58 +503,58 @@ body {
 
 .acoes {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.4rem;
 }
 
 /* ==========================================
    BOTÕES
-   ==========================================
-   btn-primary: dourado principal.
-   btn-secondary: cinza neutro.
-   btn-danger: vermelho (excluir).
-   btn-edit: azul (editar).
    ========================================== */
 
 .btn {
     display: inline-block;
-    padding: 0.55rem 1.25rem;
-    border: none;
-    border-radius: 6px;
-    font-weight: 700;
-    font-size: 0.95rem;
+    padding: 0.5rem 1.1rem;
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio);
+    background-color: var(--cor-branca);
+    font-weight: 600;
+    font-size: 0.92rem;
     cursor: pointer;
     text-decoration: none;
     text-align: center;
-    transition: background-color 0.15s ease, transform 0.1s ease;
+    color: var(--cor-texto);
+    transition: background-color 0.12s ease, border-color 0.12s ease;
 }
 
 .btn:hover {
-    transform: translateY(-1px);
+    border-color: var(--dourado-escuro);
 }
 
 .btn-primary {
     background-color: var(--dourado-principal);
+    border-color: var(--dourado-escuro);
     color: var(--cor-texto);
 }
 
 .btn-primary:hover {
     background-color: var(--dourado-escuro);
+    border-color: var(--dourado-escuro);
     color: var(--cor-branca);
 }
 
 .btn-secondary {
-    background-color: #E0E0E0;
-    color: var(--cor-texto);
+    background-color: transparent;
+    border-color: var(--cor-borda);
+    color: var(--cor-texto-suave);
 }
 
 .btn-secondary:hover {
-    background-color: #BDBDBD;
+    border-color: var(--cor-texto-suave);
 }
 
-/* Botão secundário — usado para ações como "Criar uma conta". */
 .btn-outline {
-    background-color: var(--amarelo-claro);
-    color: var(--cor-texto);
+    background-color: var(--cor-branca);
+    border-color: var(--dourado-escuro);
+    color: var(--dourado-escuro);
 }
 
 .btn-outline:hover {
@@ -449,72 +563,69 @@ body {
 
 .btn-danger {
     background-color: var(--cor-perigo);
+    border-color: var(--cor-perigo);
     color: var(--cor-branca);
 }
 
 .btn-danger:hover {
-    background-color: #b71c1c;
+    background-color: #a72424;
 }
 
 .btn-edit {
     background-color: var(--cor-editar);
+    border-color: var(--cor-editar);
     color: var(--cor-branca);
 }
 
 .btn-edit:hover {
-    background-color: #0d47a1;
+    background-color: #15406f;
 }
 
 .btn-sm {
-    padding: 0.35rem 0.85rem;
+    padding: 0.3rem 0.75rem;
     font-size: 0.85rem;
 }
 
 /* ==========================================
    FORMULÁRIOS
-   ==========================================
-   Bordas douradas nos campos de entrada.
-   Efeito de foco com tom amarelo.
    ========================================== */
 
 .form-card {
     background-color: var(--cor-fundo-card);
     border: 1px solid var(--cor-borda);
     border-radius: var(--raio);
-    box-shadow: var(--sombra);
-    padding: 2rem;
+    padding: 1.75rem;
     max-width: 600px;
     margin: 0 auto;
 }
 
 .form-group {
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.1rem;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.35rem;
     font-weight: 600;
-    font-size: 0.95rem;
-    color: var(--cor-texto);
+    font-size: 0.92rem;
 }
 
 .form-control {
     width: 100%;
-    padding: 0.6rem 0.85rem;
+    padding: 0.55rem 0.8rem;
     border: 1px solid var(--cor-borda);
-    border-radius: 6px;
+    border-radius: var(--raio);
     font-size: 0.95rem;
     font-family: inherit;
     color: var(--cor-texto);
     background-color: var(--cor-fundo-card);
-    transition: border-color 0.15s ease;
+    transition: border-color 0.12s ease;
 }
 
 .form-control:focus {
     outline: none;
-    border-color: var(--dourado-principal);
-    box-shadow: 0 0 0 3px rgba(252, 211, 77, 0.25);
+    border-color: var(--dourado-escuro);
+    box-shadow: 0 0 0 2px rgba(185, 141, 31, 0.15);
 }
 
 select.form-control {
@@ -523,12 +634,13 @@ select.form-control {
 
 .form-actions {
     display: flex;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
+    gap: 0.7rem;
+    margin-top: 1.4rem;
+    flex-wrap: wrap;
 }
 
 .field-errors {
-    margin-top: 0.35rem;
+    margin-top: 0.3rem;
 }
 
 .error-text {
@@ -537,12 +649,29 @@ select.form-control {
     font-weight: 600;
 }
 
+.login-link {
+    text-align: center;
+    margin-top: 1.1rem;
+    color: var(--cor-texto-suave);
+    font-size: 0.92rem;
+}
+
+.login-link a {
+    color: var(--dourado-escuro);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
 .confirm-details {
     background-color: var(--amarelo-muito-claro);
     border: 1px solid var(--cor-borda);
     border-radius: var(--raio);
-    padding: 1.25rem;
-    margin: 1.25rem 0;
+    padding: 1.1rem;
+    margin: 1.1rem 0;
 }
 
 .confirm-details p {
@@ -556,92 +685,233 @@ select.form-control {
 
 /* ==========================================
    ESTADO VAZIO
-   ==========================================
-   Mensagem exibida quando não há dados para
-   mostrar (ex: nenhuma receita cadastrada).
    ========================================== */
 
 .empty-state {
     text-align: center;
-    padding: 3rem 1.5rem;
+    padding: 2rem 1.25rem;
     background-color: var(--cor-fundo-card);
-    border: 1px solid var(--cor-borda);
+    border: 1px dashed var(--cor-borda);
     border-radius: var(--raio);
-    box-shadow: var(--sombra);
 }
 
 .empty-state p {
     color: var(--cor-texto-suave);
-    font-size: 1.1rem;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
 }
 
 /* ==========================================
-   BADGES (TIPO DE CATEGORIA)
-   ==========================================
-   Indicadores visuais para diferenciar
-   categorias padrão de personalizadas.
+   BADGES
    ========================================== */
 
 .badge {
     display: inline-block;
-    padding: 0.25rem 0.6rem;
-    border-radius: 12px;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
     font-size: 0.78rem;
-    font-weight: 700;
+    font-weight: 600;
     white-space: nowrap;
+    border: 1px solid transparent;
 }
 
 .badge-padrao {
     background-color: var(--amarelo-claro);
     color: var(--dourado-escuro);
+    border-color: var(--dourado-principal);
 }
 
 .badge-personalizada {
-    background-color: #e3f2fd;
-    color: #1565c0;
+    background-color: #E8F0FB;
+    color: var(--cor-editar);
+    border-color: #B9CFE8;
+}
+
+.badge-entrada {
+    background-color: var(--cor-sucesso-bg);
+    color: var(--cor-sucesso);
+    border-color: #B9D8BE;
+}
+
+.badge-saida {
+    background-color: var(--cor-erro-bg);
+    color: var(--cor-erro);
+    border-color: #E7BEBE;
+}
+
+/* ==========================================
+   METAS
+   ========================================== */
+
+.metas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+}
+
+.meta-card h2 {
+    font-size: 1.1rem;
+    margin-bottom: 0.4rem;
+}
+
+.meta-prazo {
+    color: var(--cor-texto-suave);
+    font-size: 0.88rem;
+    margin-bottom: 0.6rem;
+}
+
+.meta-valores {
+    font-size: 0.98rem;
+    font-weight: 600;
+    margin-bottom: 0.7rem;
+}
+
+.meta-percentual {
+    font-size: 0.88rem;
+    color: var(--cor-texto-suave);
+    margin: 0.4rem 0 1rem;
+    text-align: right;
+}
+
+.meta-item {
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--cor-borda);
+}
+
+.meta-item:last-child {
+    border-bottom: none;
+}
+
+.meta-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+}
+
+.meta-nome {
+    font-weight: 600;
+}
+
+/* ==========================================
+   BARRAS DE PROGRESSO
+   ========================================== */
+
+.progresso-barra {
+    width: 100%;
+    height: 10px;
+    background-color: #EAE4D4;
+    border: 1px solid var(--cor-borda);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progresso-preenchido {
+    height: 100%;
+    background-color: var(--dourado-escuro);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.progresso-aviso .progresso-preenchido {
+    background-color: var(--cor-erro);
+}
+
+/* ==========================================
+   PLANEJAMENTO E FILTROS
+   ========================================== */
+
+.planejamento-resumo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.filtro-mes {
+    max-width: 400px;
+    margin: 0 0 1.75rem;
+}
+
+.filtros {
+    max-width: 100%;
+    margin-bottom: 1.75rem;
+}
+
+.filtros-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 0.9rem;
+}
+
+/* ==========================================
+   GRÁFICOS
+   ========================================== */
+
+.graficos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 1.25rem;
+}
+
+.grafico-container {
+    background-color: var(--cor-fundo-card);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio);
+    padding: 1.1rem;
+}
+
+.grafico-container h3 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    color: var(--cor-texto-suave);
+}
+
+.grafico-full {
+    grid-column: 1 / -1;
 }
 
 /* ==========================================
    RODAPÉ
-   ==========================================
-   Rodapé com fundo dourado escuro.
    ========================================== */
 
 .site-footer {
     background-color: var(--dourado-principal);
+    border-top: 2px solid var(--dourado-escuro);
     color: var(--cor-texto);
-    text-align: center;
-    padding: 1rem;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
+}
+
+.site-footer .container {
+    padding: 1rem 1.5rem;
 }
 
 /* ==========================================
    RESPONSIVIDADE
-   ==========================================
-   Ajustes para telas menores. O menu de
-   navegação se adapta, os cards se reorganizam
-   e os formulários mantêm a legibilidade.
    ========================================== */
 
 @media (max-width: 768px) {
-    .site-header .container {
-        flex-wrap: wrap;
+    .header-topo {
         justify-content: center;
     }
 
     .main-nav ul {
         justify-content: center;
-        gap: 0.5rem;
+        gap: 0.3rem;
     }
 
     .main-nav a {
-        font-size: 0.8rem;
-        padding: 0.3rem 0.5rem;
+        font-size: 0.88rem;
+        padding: 0.3rem 0.45rem;
+    }
+
+    .logo-pigmoney {
+        height: 34px;
     }
 
     .home-hero .page-title {
-        font-size: 2rem;
+        font-size: 1.6rem;
     }
 
     .home-actions {
@@ -649,7 +919,20 @@ select.form-control {
         align-items: center;
     }
 
-    .logo-pigmoney {
-        height: 35px;
+    .resumo-geral {
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .resumo-valor {
+        font-size: 1.8rem;
+    }
+
+    .graficos-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .planejamento-resumo {
+        grid-template-columns: 1fr 1fr;
     }
 }

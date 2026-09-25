@@ -1,0 +1,29 @@
+{# Página de confirmação para excluir uma meta. #}
+{% extends 'base.html' %}
+
+{% block title %}PigMoney — Excluir Meta{% endblock %}
+
+{% block content %}
+
+    <h1 class="page-title">Excluir Meta</h1>
+
+    <div class="form-card">
+        <p>Tem certeza que deseja excluir esta meta?</p>
+
+        <div class="confirm-details">
+            <p><strong>Nome:</strong> {{ meta.nome_meta }}</p>
+            <p><strong>Valor atual:</strong> R$ {{ meta.valor_atual }}</p>
+            <p><strong>Valor objetivo:</strong> R$ {{ meta.valor_objetivo }}</p>
+            <p><strong>Prazo:</strong> {{ meta.prazo|date:"d/m/Y" }}</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-danger">Sim, excluir</button>
+                <a href="{% url 'meta_listar' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}

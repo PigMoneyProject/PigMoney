@@ -1,0 +1,51 @@
+{# Lista todas as metas financeiras do usuário logado. #}
+{% extends 'base.html' %}
+
+{% block title %}PigMoney — Metas{% endblock %}
+
+{% block content %}
+
+    <div class="page-header">
+        <h1 class="page-title">Metas Financeiras</h1>
+        <a href="{% url 'meta_cadastrar' %}" class="btn btn-primary">+ Nova Meta</a>
+    </div>
+
+    {% if metas %}
+        {# Lista de metas com a barra de progresso. #}
+        <div class="metas-grid">
+            {% for meta in metas %}
+                <div class="meta-card card">
+                    <h2>{{ meta.nome_meta }}</h2>
+
+                    {# Prazo da meta no formato brasileiro. #}
+                    <p class="meta-prazo">Prazo: {{ meta.prazo|date:"d/m/Y" }}</p>
+
+                    {# Valores: quanto já juntou / objetivo. #}
+                    <p class="meta-valores">
+                        R$ {{ meta.valor_atual|floatformat:2 }} de R$ {{ meta.valor_objetivo|floatformat:2 }}
+                    </p>
+
+                    {# Barra de progresso — percentual calculado pelo model. #}
+                    {# A largura usa o valor puro (ponto decimal) porque #}
+                    {# o filtro floatformat usaria vírgula (inválido em CSS). #}
+                    <div class="progresso-barra"
+                         {% if meta.percentual >= 100 %}style="--progresso-cor: var(--cor-sucesso);"{% endif %}>
+                        <div class="progresso-preenchido" style="width: {{ meta.percentual }}%"></div>
+                    </div>
+                    <p class="meta-percentual">{{ meta.percentual|floatformat:1 }}% alcançado</p>
+
+                    <div class="acoes">
+                        <a href="{% url 'meta_editar' meta.id_meta %}" class="btn btn-sm btn-edit">Editar</a>
+                        <a href="{% url 'meta_excluir' meta.id_meta %}" class="btn btn-sm btn-danger">Excluir</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <p>Você ainda não possui metas cadastradas.</p>
+            <a href="{% url 'meta_cadastrar' %}" class="btn btn-primary">Criar primeira meta</a>
+        </div>
+    {% endif %}
+
+{% endblock %}

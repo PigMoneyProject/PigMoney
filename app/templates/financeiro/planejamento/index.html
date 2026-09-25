@@ -1,0 +1,98 @@
+{# Página de planejamento financeiro mensal. #}
+{% extends 'base.html' %}
+
+{% block title %}PigMoney — Planejamento{% endblock %}
+
+{% block content %}
+
+    <h1 class="page-title">Planejamento Financeiro</h1>
+    <p class="page-description">Defina um limite de gastos para o mês e acompanhe quanto já gastou.</p>
+
+    {# ── SELEÇÃO DO MÊS ── #}
+    {# Formulário GET: envia o mês/ano escolhido pela URL (sem modificar dados). #}
+    <div class="form-card filtro-mes">
+        <form method="get">
+            <div class="form-group">
+                <label for="mes_ano">Mês do planejamento</label>
+                <input type="month" name="mes_ano" id="mes_ano"
+                       class="form-control"
+                       value="{{ ano }}-{% if mes < 10 %}0{{ mes }}{% else %}{{ mes }}{% endif %}">
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Ver mês</button>
+            </div>
+        </form>
+    </div>
+
+    {# ── RESUMO DO MÊS SELECIONADO ── #}
+    <div class="card-secao">
+        <h2 class="card-secao-titulo">Resumo de {{ nome_mes }}/{{ ano }}</h2>
+
+        {# Se já existe planejamento, mostramos a comparação limite x gasto. #}
+        {% if dados.limite %}
+            <div class="planejamento-resumo">
+                <div class="card-secao-mini">
+                    <span>Limite planejado</span>
+                    <strong>R$ {{ dados.limite|floatformat:2 }}</strong>
+                </div>
+                <div class="card-secao-mini">
+                    <span>Total gasto no mês</span>
+                    <strong class="valor-despesa">R$ {{ dados.total_gasto|floatformat:2 }}</strong>
+                </div>
+                <div class="card-secao-mini">
+                    <span>Valor restante</span>
+                    <strong>R$ {{ dados.restante|floatformat:2 }}</strong>
+                </div>
+                <div class="card-secao-mini">
+                    <span>Limite utilizado</span>
+                    <strong>{{ dados.percentual_utilizado|floatformat:1 }}%</strong>
+                </div>
+            </div>
+
+            {# Barra de progresso — fica vermelha se o limite foi estourado. #}
+            {% if dados.percentual_utilizado > 100 %}
+                <div class="progresso-barra progresso-aviso">
+            {% else %}
+                <div class="progresso-barra">
+            {% endif %}
+                <div class="progresso-preenchido" style="width: {{ dados.percentual_utilizado }}%"></div>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>Nenhum limite definido para este mês. Defina abaixo para começar.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    {# ── FORMULÁRIO PARA DEFINIR O LIMITE ── #}
+    <div class="card-secao">
+        <h2 class="card-secao-titulo">
+            {% if dados.limite %}Ajustar limite{% else %}Definir limite{% endif %} de {{ nome_mes }}/{{ ano }}
+        </h2>
+
+        <div class="form-card">
+            <form method="post">
+                {% csrf_token %}
+
+                {% for field in form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="field-errors">
+                                {% for error in field.errors %}
+                                    <span class="error-text">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Salvar planejamento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}

@@ -8,7 +8,7 @@
 
 
 from django.contrib import admin
-from .models import Categoria, Receita, Despesa
+from .models import Categoria, Receita, Despesa, MetaFinanceira, PlanejamentoMensal
 
 
 @admin.register(Categoria)
@@ -41,3 +41,19 @@ class DespesaAdmin(admin.ModelAdmin):
     list_display = ['id_despesa', 'descricao', 'valor', 'data_despesa', 'usuario', 'categoria']
     list_filter = ['categoria', 'data_despesa']
     search_fields = ['descricao']
+
+
+@admin.register(MetaFinanceira)
+class MetaFinanceiraAdmin(admin.ModelAdmin):
+    """Configura a exibição de Metas no painel admin."""
+    list_display = ['id_meta', 'nome_meta', 'valor_objetivo', 'valor_atual', 'prazo', 'usuario']
+    list_filter = ['prazo', 'usuario']
+    search_fields = ['nome_meta']
+
+
+@admin.register(PlanejamentoMensal)
+class PlanejamentoMensalAdmin(admin.ModelAdmin):
+    """Configura a exibição do Planejamento Mensal no painel admin."""
+    list_display = ['id_planejamento', 'mes', 'ano', 'limite_gastos', 'usuario']
+    list_filter = ['mes', 'ano']
+    search_fields = ['usuario__username']

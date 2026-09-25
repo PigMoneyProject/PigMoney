@@ -13,14 +13,14 @@
     {# ── CATEGORIAS PADRÃO ── #}
     {# Categorias padrão: pertencem a todos os usuários (usuario=NULL). #}
     {# Não podem ser editadas nem excluídas por usuários comuns. #}
-    <h2 class="page-subtitle" style="font-size:1.2rem;margin-bottom:0.75rem;color:var(--cor-texto-suave);">Categorias padrao</h2>
+    <h2 class="page-subtitle" style="font-size:1.2rem;margin-bottom:0.75rem;color:var(--cor-texto-suave);">Categorias padrão</h2>
 
     {% if categorias_padrao %}
         <table class="table">
             <thead>
                 <tr>
                     <th>Nome</th>
-                    <th>Descricao</th>
+                    <th>Descrição</th>
                     <th>Tipo</th>
                 </tr>
             </thead>
@@ -29,14 +29,14 @@
                     <tr>
                         <td>{{ categoria.nome_categoria }}</td>
                         <td>{{ categoria.descricao|default:"-" }}</td>
-                        <td><span class="badge badge-padrao">Padrao</span></td>
+                        <td><span class="badge badge-padrao">Padrão</span></td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     {% else %}
         <div class="empty-state" style="padding:1.5rem;margin-bottom:1.5rem;">
-            <p>Nenhuma categoria padrao disponivel.</p>
+            <p>Nenhuma categoria padrão disponível.</p>
         </div>
     {% endif %}
 
@@ -50,9 +50,9 @@
             <thead>
                 <tr>
                     <th>Nome</th>
-                    <th>Descricao</th>
+                    <th>Descrição</th>
                     <th>Tipo</th>
-                    <th>Acoes</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -71,7 +71,7 @@
         </table>
     {% else %}
         <div class="empty-state" style="padding:1.5rem;">
-            <p>Voce ainda nao criou categorias personalizadas.</p>
+            <p>Você ainda não criou categorias personalizadas.</p>
             <a href="{% url 'categoria_cadastrar' %}" class="btn btn-primary">+ Nova Categoria</a>
         </div>
     {% endif %}

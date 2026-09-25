@@ -1,0 +1,39 @@
+{# Formulário para cadastrar uma nova meta financeira. #}
+{% extends 'base.html' %}
+
+{% block title %}PigMoney — Cadastrar Meta{% endblock %}
+
+{% block content %}
+
+    <h1 class="page-title">Cadastrar Meta</h1>
+    <p class="page-description">Defina um objetivo financeiro para acompanhar seu progresso.</p>
+
+    <div class="form-card">
+        <form method="post">
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small class="error-text">{{ field.help_text }}</small>
+                    {% endif %}
+                    {% if field.errors %}
+                        <div class="field-errors">
+                            {% for error in field.errors %}
+                                <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <a href="{% url 'meta_listar' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}

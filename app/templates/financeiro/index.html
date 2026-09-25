@@ -1,31 +1,272 @@
-{# Dashboard financeiro — exibe cards de acesso rápido. #}
+{# Dashboard financeiro principal — painel completo do usuário logado. #}
 {% extends 'base.html' %}
+
+{% load static %}
 
 {% block title %}PigMoney — Financeiro{% endblock %}
 
 {% block content %}
 
-    <h1 class="page-title">Financeiro</h1>
-    <p class="page-description">Area destinada ao controle financeiro do usuario.</p>
+    <h1 class="page-title">Painel Financeiro</h1>
+    <p class="page-description">Bem-vindo, {{ user.first_name|default:user.username }}! Resumo das suas finanças.</p>
 
-    {# Cards de navegação para cada seção financeira. #}
-    <div class="cards">
-        <a class="card" href="{% url 'receita_listar' %}">
-            <h2>Receitas</h2>
-            <p>Entradas de dinheiro.</p>
-        </a>
-        <a class="card" href="{% url 'despesa_listar' %}">
-            <h2>Despesas</h2>
-            <p>Saidas de dinheiro.</p>
-        </a>
-        <a class="card" href="{% url 'categoria_listar' %}">
-            <h2>Categorias</h2>
-            <p>Organizacao dos lancamentos.</p>
-        </a>
-        <div class="card">
-            <h2>Saldo</h2>
-            <p>Resumo da situacao financeira.</p>
+    {# ── RESUMO FINANCEIRO ── #}
+    {# Os valores são calculados na View index() e enviados pelo contexto. #}
+    <div class="resumo-geral">
+
+        {# ── Saldo em destaque ── #}
+        {# Muda apenas o tom do texto conforme o resultado (verde/vermelho). #}
+        <div class="resumo-saldo">
+            <h2>Saldo Atual</h2>
+            <p class="resumo-valor {% if saldo > 0 %}cor-positiva{% elif saldo < 0 %}cor-negativa{% else %}cor-neutra{% endif %}">
+                {% if saldo < 0 %}- R$ {{ saldo|floatformat:2 }}{% else %}R$ {{ saldo|floatformat:2 }}{% endif %}
+            </p>
+            <p class="resumo-nota">Receitas - Despesas</p>
+        </div>
+
+        {# ── Totais em linhas simples ── #}
+        <div class="resumo-lista">
+            <div class="resumo-item">
+                <span class="resumo-rotulo">Total de receitas</span>
+                <span class="resumo-campo">
+                    <strong class="cor-positiva">R$ {{ total_receitas|floatformat:2 }}</strong>
+                    <small>{{ quantidade_receitas }} lançamento{{ quantidade_receitas|pluralize }}</small>
+                </span>
+            </div>
+            <div class="resumo-item">
+                <span class="resumo-rotulo">Total de despesas</span>
+                <span class="resumo-campo">
+                    <strong class="cor-negativa">R$ {{ total_despesas|floatformat:2 }}</strong>
+                    <small>{{ quantidade_despesas }} lançamento{{ quantidade_despesas|pluralize }}</small>
+                </span>
+            </div>
         </div>
     </div>
+
+    {# ── MOVIMENTAÇÕES RECENTES ── #}
+    <div class="card-secao">
+        <div class="page-header">
+            <h2 class="card-secao-titulo">Movimentações recentes</h2>
+            <a href="{% url 'historico' %}" class="btn btn-sm btn-primary">Ver histórico completo</a>
+        </div>
+
+        {% if movimentacoes_recentes %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Descrição</th>
+                        <th>Categoria</th>
+                        <th>Data</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mov in movimentacoes_recentes %}
+                        <tr>
+                            {# Badge visual para diferenciar receita (verde) de despesa (vermelha). #}
+                            <td>
+                                {% if mov.tipo == 'Receita' %}
+                                    <span class="badge badge-entrada">Receita</span>
+                                {% else %}
+                                    <span class="badge badge-saida">Despesa</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ mov.descricao }}</td>
+                            <td>{{ mov.categoria }}</td>
+                            {# |date:"d/m/Y" converte a data para o padrão brasileiro. #}
+                            <td>{{ mov.data|date:"d/m/Y" }}</td>
+                            {% if mov.tipo == 'Receita' %}
+                                <td class="valor-receita">R$ {{ mov.valor|floatformat:2 }}</td>
+                            {% else %}
+                                <td class="valor-despesa">- R$ {{ mov.valor|floatformat:2 }}</td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty-state">
+                <p>Você ainda não possui movimentações cadastradas.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    {# ── METAS (resumo no dashboard) ── #}
+    <div class="card-secao">
+        <div class="page-header">
+            <h2 class="card-secao-titulo">Metas financeiras</h2>
+            <a href="{% url 'meta_listar' %}" class="btn btn-sm btn-primary">Gerenciar metas</a>
+        </div>
+
+        {% if metas %}
+            {# Exibe até 3 metas com a barra de progresso. #}
+            {% for meta in metas|slice:":3" %}
+                <div class="meta-item">
+                    <div class="meta-info">
+                        <span class="meta-nome">{{ meta.nome_meta }}</span>
+                        <span class="meta-valores">R$ {{ meta.valor_atual|floatformat:2 }} / R$ {{ meta.valor_objetivo|floatformat:2 }} ({{ meta.percentual|floatformat:1 }}%)</span>
+                    </div>
+                    {# Barra de progresso: largura usa o percentual puro (sem flange #}
+                    {# pt-BR de vírgula) porque CSS exige ponto decimal. #}
+                    <div class="progresso-barra">
+                        <div class="progresso-preenchido" style="width: {{ meta.percentual }}%"></div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <p>Você ainda não possui metas cadastradas.</p>
+                <a href="{% url 'meta_cadastrar' %}" class="btn btn-primary">Criar primeira meta</a>
+            </div>
+        {% endif %}
+    </div>
+
+    {# ── PLANEJAMENTO MENSAL (resumo no dashboard) ── #}
+    <div class="card-secao">
+        <div class="page-header">
+            <h2 class="card-secao-titulo">Planejamento do mês</h2>
+            <a href="{% url 'planejamento' %}" class="btn btn-sm btn-primary">Ajustar planejamento</a>
+        </div>
+
+        {% if dados_planejamento.limite %}
+            <div class="planejamento-resumo">
+                <div class="card-secao-mini">
+                    <span>Limite planejado</span>
+                    <strong>R$ {{ dados_planejamento.limite|floatformat:2 }}</strong>
+                </div>
+                <div class="card-secao-mini">
+                    <span>Total gasto no mês</span>
+                    <strong class="valor-despesa">R$ {{ dados_planejamento.total_gasto|floatformat:2 }}</strong>
+                </div>
+                <div class="card-secao-mini">
+                    <span>Restante</span>
+                    <strong>R$ {{ dados_planejamento.restante|floatformat:2 }}</strong>
+                </div>
+                <div class="card-secao-mini">
+                    <span>Limite utilizado</span>
+                    <strong>{{ dados_planejamento.percentual_utilizado|floatformat:1 }}%</strong>
+                </div>
+            </div>
+            {# Barra de progresso do limite utilizado. A cor muda se passar de 100%. #}
+            {% if dados_planejamento.percentual_utilizado > 100 %}
+                <div class="progresso-barra progresso-aviso">
+            {% else %}
+                <div class="progresso-barra">
+            {% endif %}
+                <div class="progresso-preenchido" style="width: {{ dados_planejamento.percentual_utilizado }}%"></div>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>Você ainda não definiu um limite de gastos para este mês.</p>
+                <a href="{% url 'planejamento' %}" class="btn btn-primary">Definir limite</a>
+            </div>
+        {% endif %}
+    </div>
+
+    {# ── GRÁFICOS (Chart.js) ── #}
+    <div class="card-secao">
+        <h2 class="card-secao-titulo">Gráficos</h2>
+        <p class="page-description">Dados reais das suas receitas e despesas.</p>
+
+        <div class="graficos-grid">
+            <div class="grafico-container">
+                <h3>Receitas x Despesas (6 meses)</h3>
+                <canvas id="graficoComparacao"></canvas>
+            </div>
+            <div class="grafico-container">
+                <h3>Despesas por categoria</h3>
+                <canvas id="graficoCategorias"></canvas>
+            </div>
+            <div class="grafico-container grafico-full">
+                <h3>Evolução do saldo (acumulado)</h3>
+                <canvas id="graficoEvolucao"></canvas>
+            </div>
+        </div>
+    </div>
+
+    {# ── SCRIPT DOS GRÁFICOS ── #}
+    {# Carrega o Chart.js (biblioteca JavaScript de gráficos) salvo localmente #}
+    {# na pasta static/js. Por estar no projeto, funciona mesmo sem internet. #}
+    <script src="{% static 'js/chart.umd.min.js' %}"></script>
+
+    <script>
+        // =======================================================
+        // GRÁFICOS COM CHART.JS
+        // =======================================================
+        // O template recebe do Django as listas já convertidas em JSON
+        // (via json.dumps na View). Por isso usamos |safe: indica ao
+        // Django que o conteúdo é código JavaScript válido e pode ser
+        // interpretado sem escapar os caracteres.
+        // =======================================================
+
+        // Dados vindos do contexto da View (dados REAIS do usuário).
+        const graficoMeses = {{ grafico_meses|safe }};
+        const graficoReceitas = {{ grafico_receitas|safe }};
+        const graficoDespesas = {{ grafico_despesas|safe }};
+        const graficoSaldoAcumulado = {{ grafico_saldo_acumulado|safe }};
+        const graficoCategoriasRotulos = {{ grafico_categorias_rotulos|safe }};
+        const graficoCategoriasValores = {{ grafico_categorias_valores|safe }};
+
+        // A biblioteca Chart.js expõe um objeto global "Chart".
+        // new Chart(canvas, config) desenha o gráfico dentro do <canvas>.
+        // A config define o tipo (bar = barras, pie = pizza, line = linha),
+        // os rótulos e os dados de cada série.
+
+        // ── Gráfico 1: Receitas x Despesas (colunas) ──
+        new Chart(document.getElementById('graficoComparacao'), {
+            type: 'bar',  // Gráfico de colunas/barras.
+            data: {
+                labels: graficoMeses,
+                datasets: [
+                    {
+                        label: 'Receitas',
+                        data: graficoReceitas,
+                        backgroundColor: 'rgba(46, 125, 50, 0.75)',  // verde
+                    },
+                    {
+                        label: 'Despesas',
+                        data: graficoDespesas,
+                        backgroundColor: 'rgba(198, 40, 40, 0.75)',  // vermelho
+                    }
+                ]
+            },
+            options: { responsive: true }
+        });
+
+        // ── Gráfico 2: Despesas por categoria (pizza) ──
+        new Chart(document.getElementById('graficoCategorias'), {
+            type: 'pie',  // Gráfico de pizza.
+            data: {
+                labels: graficoCategoriasRotulos,
+                datasets: [{
+                    data: graficoCategoriasValores,
+                    // Cores padrão do Chart.js quando não definimos manualmente.
+                    backgroundColor: [
+                        '#D4A017', '#1565c0', '#2e7d32', '#c62828',
+                        '#6a1b9a', '#ef6c00', '#00695c', '#5d4037'
+                    ]
+                }]
+            },
+            options: { responsive: true }
+        });
+
+        // ── Gráfico 3: Evolução do saldo (linha) ──
+        new Chart(document.getElementById('graficoEvolucao'), {
+            type: 'line',  // Gráfico de linha.
+            data: {
+                labels: graficoMeses,
+                datasets: [{
+                    label: 'Saldo acumulado',
+                    data: graficoSaldoAcumulado,
+                    borderColor: '#D4A017',          // cor da linha (dourado)
+                    backgroundColor: 'rgba(212, 160, 23, 0.15)',
+                    fill: true,                      // preenche a área sob a linha
+                    tension: 0.3                     // suaviza as curvas
+                }]
+            },
+            options: { responsive: true }
+        });
+    </script>
 
 {% endblock %}

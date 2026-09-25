@@ -1,0 +1,98 @@
+{# Página de histórico financeiro — todas as movimentações do usuário. #}
+{% extends 'base.html' %}
+
+{% block title %}PigMoney — Histórico{% endblock %}
+
+{% block content %}
+
+    <h1 class="page-title">Histórico Financeiro</h1>
+    <p class="page-description">Todas as suas movimentações, da mais recente para a mais antiga.</p>
+
+    {# ── FILTROS ── #}
+    {# Formulário GET: os filtros são enviados pela URL sem alterar dados. #}
+    <div class="form-card filtros">
+        <form method="get">
+            <div class="filtros-grid">
+                <div class="form-group">
+                    <label for="tipo">Tipo</label>
+                    <select name="tipo" id="tipo" class="form-control">
+                        <option value="">Todos</option>
+                        {# value="{{ filtro_tipo }}" mantém a opção selecionada. #}
+                        <option value="Receita" {% if filtro_tipo == 'Receita' %}selected{% endif %}>Receita</option>
+                        <option value="Despesa" {% if filtro_tipo == 'Despesa' %}selected{% endif %}>Despesa</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="categoria">Categoria</label>
+                    <select name="categoria" id="categoria" class="form-control">
+                        <option value="">Todas</option>
+                        {% for categoria in categorias %}
+                            {# Comparação entre strings: o ID vem como texto na URL. #}
+                            <option value="{{ categoria.id_categoria }}"
+                                {% if filtro_categoria == categoria.id_categoria|stringformat:"s" %}selected{% endif %}>
+                                {{ categoria.nome_categoria }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="data_inicio">Data inicial</label>
+                    <input type="date" name="data_inicio" id="data_inicio"
+                           class="form-control" value="{{ filtro_data_inicio }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="data_fim">Data final</label>
+                    <input type="date" name="data_fim" id="data_fim"
+                           class="form-control" value="{{ filtro_data_fim }}">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+                <a href="{% url 'historico' %}" class="btn btn-secondary">Limpar filtros</a>
+            </div>
+        </form>
+    </div>
+
+    {# ── LISTAGEM DE MOVIMENTAÇÕES ── #}
+    {% if movimentacoes %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Descrição</th>
+                    <th>Categoria</th>
+                    <th>Data</th>
+                    <th>Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mov in movimentacoes %}
+                    <tr>
+                        <td>
+                            <span class="badge {% if mov.tipo == 'Receita' %}badge-entrada{% else %}badge-saida{% endif %}">
+                                {{ mov.tipo }}
+                            </span>
+                        </td>
+                        <td>{{ mov.descricao }}</td>
+                        <td>{{ mov.categoria }}</td>
+                        <td>{{ mov.data|date:"d/m/Y" }}</td>
+                        {% if mov.tipo == 'Receita' %}
+                            <td class="valor-receita">R$ {{ mov.valor|floatformat:2 }}</td>
+                        {% else %}
+                            <td class="valor-despesa">- R$ {{ mov.valor|floatformat:2 }}</td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="empty-state">
+            <p>Nenhuma movimentação encontrada para os filtros selecionados.</p>
+        </div>
+    {% endif %}
+
+{% endblock %}
