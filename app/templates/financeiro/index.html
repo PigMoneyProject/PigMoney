@@ -7,8 +7,21 @@
 
 {% block content %}
 
-    <h1 class="page-title">Painel Financeiro</h1>
-    <p class="page-description">Bem-vindo, {{ user.first_name|default:user.username }}! Resumo das suas finanças.</p>
+    {# ── CABEÇALHO DA PÁGINA + BOTÃO DE RELATÓRIO ── #}
+    {# O .page-header deixa o título à esquerda e o #}
+    {# botão à direita (flexbox definido no style.css). #}
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Painel Financeiro</h1>
+            <p class="page-description">Bem-vindo, {{ user.first_name|default:user.username }}! Resumo das suas finanças.</p>
+        </div>
+
+        {# ── BOTÃO IMPRIMIR RELATÓRIO ── #}
+        {# Abre a página de relatório, onde o usuário #}
+        {# visualiza todos os dados e pode imprimir #}
+        {# em papel ou salvar como PDF. #}
+        <a href="{% url 'relatorio' %}" class="btn btn-primary">Imprimir relatório</a>
+    </div>
 
     {# ── RESUMO FINANCEIRO ── #}
     {# Os valores são calculados na View index() e enviados pelo contexto. #}

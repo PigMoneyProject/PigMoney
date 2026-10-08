@@ -227,4 +227,13 @@ urlpatterns = [
         app_views.historico,
         name='historico'
     ),
+
+    # ── Relatório financeiro (impressão) ─────────
+    # Página de relatório completo para visualizar e
+    # imprimir (ou salvar como PDF) os dados do usuário.
+    path(
+        'relatorio/',
+        app_views.relatorio,
+        name='relatorio'
+    ),
 ]

@@ -1,0 +1,631 @@
+{# ===================================================== #}
+{# RELATÓRIO FINANCEIRO — PÁGINA DE IMPRESSÃO          #}
+{# ===================================================== #}
+{# Esta página reúne todos os dados financeiros do      #}
+{# usuário logado para visualização e impressão.        #}
+{#                                                      #}
+{# Como os dados chegam aqui:                           #}
+{#   URL /relatorio/ → view relatorio() → contexto      #}
+{#   O dicionário "contexto" da view é disponibilizado  #}
+{#   neste template com os nomes das chaves             #}
+{#   (ex: {{ total_receitas }}, {{ receitas }}).        #}
+{#                                                      #}
+{# Formatação:                                          #}
+{#   |moeda       → "R$ 1.250,00" (tag personalizada)   #}
+{#   |date:"d/m/Y" → data no formato DD/MM/AAAA         #}
+{#   |porcentagem → "37,5%" (tag personalizada)         #}
+{# ===================================================== #}
+{% extends 'base.html' %}
+
+{% load static %}
+{% load pigmoney_extras %}
+
+{% block title %}PigMoney — Relatório Financeiro{% endblock %}
+
+{% block content %}
+
+    {# ── BARRA DE AÇÕES (apenas na tela; oculta na impressão) ── #}
+    {# A classe "no-print" é usada pelo CSS @media print para #}
+    {# esconder elementos que não devem aparecer no papel.    #}
+    <div class="page-header no-print">
+        <div>
+            <h1 class="page-title">Relatório Financeiro</h1>
+            <p class="page-description">
+                Relatório completo das suas finanças. Visualize e imprima
+                em papel ou salve como PDF.
+            </p>
+        </div>
+        {# ── BOTÃO DE IMPRESSÃO ── #}
+        {# window.print() abre a janela de impressão nativa do #}
+        {# navegador. Lá o usuário escolhe a impressora ou a   #}
+        {# opção "Salvar como PDF" — sem nenhuma dependência.  #}
+        <button type="button" class="btn btn-primary" onclick="window.print()">
+            Imprimir relatório
+        </button>
+    </div>
+
+    <div class="relatorio">
+
+        {# ════════════════════════════════════════════ #}
+        {# A. IDENTIFICAÇÃO DO RELATÓRIO                #}
+        {# ════════════════════════════════════════════ #}
+        <div class="relatorio-cabecalho">
+            <div class="relatorio-logo">
+                <img src="{% static 'img/logo_pigmoney.png' %}" alt="PigMoney">
+            </div>
+            <div class="relatorio-identificacao">
+                <h1>PigMoney — Relatório Financeiro</h1>
+                <p>
+                    <strong>Usuário:</strong>
+                    {{ user.first_name|default:user.username }}
+                    ({{ user.username }})
+                </p>
+                <p>
+                    <strong>Gerado em:</strong>
+                    {{ gerado_em|date:"d/m/Y" }} às {{ gerado_em|time:"H:i" }}
+                </p>
+                <p>
+                    <strong>Período:</strong>
+                    {% if data_inicio %}
+                        {{ data_inicio|date:"d/m/Y" }} até {{ hoje|date:"d/m/Y" }}
+                        (todas as movimentações cadastradas)
+                    {% else %}
+                        Sem movimentações cadastradas
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        {# ════════════════════════════════════════════ #}
+        {# B. RESUMO FINANCEIRO                         #}
+        {# ════════════════════════════════════════════ #}
+        {# Os valores já vêm calculados pela view:      #}
+        {#   saldo = total_receitas - total_despesas    #}
+        {# ════════════════════════════════════════════ #}
+        <section class="card-secao relatorio-secao">
+            <h2 class="card-secao-titulo">Resumo financeiro</h2>
+
+            <div class="relatorio-resumo">
+                <div class="relatorio-resumo-item">
+                    <span>Total de receitas</span>
+                    <strong class="cor-positiva">{{ total_receitas|moeda }}</strong>
+                    <small>{{ quantidade_receitas }} lançamento{{ quantidade_receitas|pluralize }}</small>
+                </div>
+                <div class="relatorio-resumo-item">
+                    <span>Total de despesas</span>
+                    <strong class="cor-negativa">{{ total_despesas|moeda }}</strong>
+                    <small>{{ quantidade_despesas }} lançamento{{ quantidade_despesas|pluralize }}</small>
+                </div>
+                <div class="relatorio-resumo-item">
+                    <span>Saldo atual (receitas - despesas)</span>
+                    {# O filtro |moeda já trata valores negativos #}
+                    {# exibindo "- R$ 150,00". #}
+                    <strong{% if saldo < 0 %} class="cor-negativa"{% elif saldo > 0 %} class="cor-positiva"{% endif %}>{{ saldo|moeda }}</strong>
+                </div>
+                {# ── Planejamento mensal (só existe se o usuário definiu) ── #}
+                {% if dados_planejamento.limite %}
+                    <div class="relatorio-resumo-item">
+                        <span>Limite de gastos do mês</span>
+                        <strong>{{ dados_planejamento.limite|moeda }}</strong>
+                    </div>
+                    <div class="relatorio-resumo-item">
+                        <span>Total gasto no mês atual</span>
+                        <strong>{{ dados_planejamento.total_gasto|moeda }}</strong>
+                    </div>
+                    <div class="relatorio-resumo-item">
+                        <span>Restante do planejamento</span>
+                        <strong>{{ dados_planejamento.restante|moeda }}</strong>
+                        <small>{{ dados_planejamento.percentual_utilizado|porcentagem }} do limite utilizado</small>
+                    </div>
+                {% else %}
+                    <div class="relatorio-resumo-item">
+                        <span>Planejamento mensal</span>
+                        <strong>Não definido</strong>
+                        <small>Sem limite de gastos cadastrado para este mês</small>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+
+        {# ════════════════════════════════════════════ #}
+        {# C. RECEITAS                                  #}
+        {# ════════════════════════════════════════════ #}
+        <section class="card-secao relatorio-secao">
+            <h2 class="card-secao-titulo">Receitas</h2>
+
+            {% if receitas %}
+                <table class="table relatorio-tabela">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Data de recebimento</th>
+                            <th class="texto-direita">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {# O for percorre a lista de receitas enviada pela view. #}
+                        {# select_related('categoria') já trouxe a categoria    #}
+                        {# junto, então mov.categoria.nome_categoria não gera   #}
+                        {# consulta extra ao banco.                             #}
+                        {% for receita in receitas %}
+                            <tr>
+                                <td>{{ receita.descricao }}</td>
+                                <td>{{ receita.categoria.nome_categoria }}</td>
+                                <td>{{ receita.data_receita|date:"d/m/Y" }}</td>
+                                <td class="texto-direita valor-receita">{{ receita.valor|moeda }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3"><strong>Total geral de receitas</strong></td>
+                            <td class="texto-direita"><strong>{{ total_receitas|moeda }}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            {% else %}
+                <div class="empty-state">
+                    <p>Nenhuma receita cadastrada no período.</p>
+                </div>
+            {% endif %}
+        </section>
+
+        {# ════════════════════════════════════════════ #}
+        {# D. DESPESAS                                  #}
+        {# ════════════════════════════════════════════ #}
+        <section class="card-secao relatorio-secao">
+            <h2 class="card-secao-titulo">Despesas</h2>
+
+            {% if despesas %}
+                <table class="table relatorio-tabela">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Data da despesa</th>
+                            <th class="texto-direita">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for despesa in despesas %}
+                            <tr>
+                                <td>{{ despesa.descricao }}</td>
+                                <td>{{ despesa.categoria.nome_categoria }}</td>
+                                <td>{{ despesa.data_despesa|date:"d/m/Y" }}</td>
+                                <td class="texto-direita valor-despesa">{{ despesa.valor|moeda }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3"><strong>Total geral de despesas</strong></td>
+                            <td class="texto-direita"><strong>{{ total_despesas|moeda }}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            {% else %}
+                <div class="empty-state">
+                    <p>Nenhuma despesa cadastrada no período.</p>
+                </div>
+            {% endif %}
+        </section>
+
+        {# ════════════════════════════════════════════ #}
+        {# E. DESPESAS POR CATEGORIA                    #}
+        {# ════════════════════════════════════════════ #}
+        {# A view agrupa as despesas por categoria e     #}
+        {# calcula o % de participação de cada uma.      #}
+        {# ════════════════════════════════════════════ #}
+        <section class="card-secao relatorio-secao">
+            <h2 class="card-secao-titulo">Despesas por categoria</h2>
+
+            {% if categorias_gastos %}
+                <table class="table relatorio-tabela">
+                    <thead>
+                        <tr>
+                            <th>Categoria</th>
+                            <th class="texto-direita">Valor total gasto</th>
+                            <th class="texto-direita">Participação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in categorias_gastos %}
+                            <tr>
+                                <td>{{ item.categoria }}</td>
+                                <td class="texto-direita">{{ item.total|moeda }}</td>
+                                <td class="texto-direita">{{ item.participacao|porcentagem }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td><strong>Total</strong></td>
+                            <td class="texto-direita"><strong>{{ total_despesas|moeda }}</strong></td>
+                            <td class="texto-direita"><strong>100,0%</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            {% else %}
+                <div class="empty-state">
+                    <p>Nenhuma despesa cadastrada, portanto não há gastos por categoria.</p>
+                </div>
+            {% endif %}
+        </section>
+
+        {# ════════════════════════════════════════════ #}
+        {# F. METAS FINANCEIRAS                         #}
+        {# ════════════════════════════════════════════ #}
+        {# O progresso percentual vem da propriedade     #}
+        {# "percentual" do model MetaFinanceira:         #}
+        {#   (valor_atual / valor_objetivo) * 100        #}
+        {# ════════════════════════════════════════════ #}
+        <section class="card-secao relatorio-secao">
+            <h2 class="card-secao-titulo">Metas financeiras</h2>
+
+            {% if metas %}
+                <table class="table relatorio-tabela">
+                    <thead>
+                        <tr>
+                            <th>Meta</th>
+                            <th class="texto-direita">Valor desejado</th>
+                            <th class="texto-direita">Valor acumulado</th>
+                            <th class="texto-direita">Progresso</th>
+                            <th>Prazo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for meta in metas %}
+                            <tr>
+                                <td>{{ meta.nome_meta }}</td>
+                                <td class="texto-direita">{{ meta.valor_objetivo|moeda }}</td>
+                                <td class="texto-direita">{{ meta.valor_atual|moeda }}</td>
+                                <td class="texto-direita">{{ meta.percentual|porcentagem }}</td>
+                                <td>{{ meta.prazo|date:"d/m/Y" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="empty-state">
+                    <p>Você ainda não possui metas cadastradas.</p>
+                </div>
+            {% endif %}
+        </section>
+
+        {# ════════════════════════════════════════════ #}
+        {# G. HISTÓRICO FINANCEIRO                      #}
+        {# ════════════════════════════════════════════ #}
+        {# A função montar_movimentacoes() (da view)     #}
+        {# junta receitas e despesas em uma só lista,    #}
+        {# ordenada da mais recente para a mais antiga.  #}
+        {# ════════════════════════════════════════════ #}
+        <section class="card-secao relatorio-secao">
+            <h2 class="card-secao-titulo">Histórico financeiro</h2>
+
+            {% if movimentacoes %}
+                <table class="table relatorio-tabela">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Data</th>
+                            <th class="texto-direita">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mov in movimentacoes %}
+                            <tr>
+                                <td>
+                                    {% if mov.tipo == 'Receita' %}
+                                        <span class="badge badge-entrada">Receita</span>
+                                    {% else %}
+                                        <span class="badge badge-saida">Despesa</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ mov.descricao }}</td>
+                                <td>{{ mov.categoria }}</td>
+                                <td>{{ mov.data|date:"d/m/Y" }}</td>
+                                {% if mov.tipo == 'Receita' %}
+                                    <td class="texto-direita valor-receita">{{ mov.valor|moeda }}</td>
+                                {% else %}
+                                    <td class="texto-direita valor-despesa">{{ mov.valor|moeda }}</td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                {# ── MENSAGEM SEM DADOS ── #}
+                {# Exibida quando o usuário não tem nenhuma #}
+                {# movimentação. Nenhum erro é gerado.       #}
+                <div class="empty-state">
+                    <p>Você ainda não possui movimentações cadastradas.</p>
+                    <p class="relatorio-sem-dados">
+                        Não existem dados financeiros para apresentar neste relatório.
+                        Cadastre receitas e despesas para gerar um relatório completo.
+                    </p>
+                </div>
+            {% endif %}
+        </section>
+
+        {# ════════════════════════════════════════════ #}
+        {# H. GRÁFICOS                                  #}
+        {# ════════════════════════════════════════════ #}
+        {# Os dados vêm do banco (mesma função do       #}
+        {# Dashboard: preparar_dados_graficos).         #}
+        {#                                              #}
+        {# Na TELA: gráfico interativo (Chart.js).      #}
+        {# NA IMPRESSÃO: o CSS @media print oculta os   #}
+        {# canvas e exibe tabelas com os mesmos dados.  #}
+        {# Isso é mais confiável para impressão/PDF,    #}
+        {# pois gráficos em canvas podem sair em branco #}
+        {# em alguns navegadores.                       #}
+        {# ════════════════════════════════════════════ #}
+        <section class="card-secao relatorio-secao">
+            <h2 class="card-secao-titulo">Gráficos</h2>
+
+            {# ── Versão para tela (canvas Chart.js) ── #}
+            <div class="graficos-tela grafico-grid">
+                <div class="grafico-container">
+                    <h3>Receitas x Despesas (6 meses)</h3>
+                    <canvas id="graficoComparacao"></canvas>
+                </div>
+                <div class="grafico-container">
+                    <h3>Despesas por categoria</h3>
+                    <canvas id="graficoCategorias"></canvas>
+                </div>
+                <div class="grafico-container grafico-full">
+                    <h3>Evolução do saldo (acumulado)</h3>
+                    <canvas id="graficoEvolucao"></canvas>
+                </div>
+            </div>
+
+            {# ── Versão para impressão (tabelas com os mesmos dados) ── #}
+            {# Fica oculta na tela e aparece apenas na impressão.        #}
+            {# A tabela abaixo reúne os dados dos 3 gráficos:           #}
+            {# receitas x despesas por mês, evolução do saldo e, para     #}
+            {# despesas por categoria, a seção E já exibe a mesma         #}
+            {# informação em formato de tabela.                           #}
+            <div class="graficos-impressao">
+                <h3>Evolução mensal (últimos 6 meses)</h3>
+                <table class="table relatorio-tabela">
+                    <thead>
+                        <tr>
+                            <th>Mês</th>
+                            <th class="texto-direita">Receitas</th>
+                            <th class="texto-direita">Despesas</th>
+                            <th class="texto-direita">Saldo acumulado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {# forloop.counter0 = índice (0, 1, 2...), usado #}
+                        {# para pegar o valor da mesma posição nas outras #}
+                        {# listas paralelas enviadas pela view.            #}
+                        {% for mes in tabela_meses %}
+                            <tr>
+                                <td>{{ mes }}</td>
+                                <td class="texto-direita">{{ tabela_receitas_mes|index:forloop.counter0|moeda }}</td>
+                                <td class="texto-direita">{{ tabela_despesas_mes|index:forloop.counter0|moeda }}</td>
+                                <td class="texto-direita">{{ tabela_saldo_acumulado|index:forloop.counter0|moeda }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        {# ── RODAPÉ DO RELATÓRIO ── #}
+        <p class="relatorio-rodape">
+            PigMoney — Relatório gerado em {{ gerado_em|date:"d/m/Y" }}
+            às {{ gerado_em|time:"H:i" }} para o usuário
+            {{ user.first_name|default:user.username }}.
+        </p>
+    </div>
+
+    {# ── CHART.JS E GRÁFICOS (apenas na tela) ── #}
+    {# Carrega a biblioteca salva localmente no projeto. #}
+    <script src="{% static 'js/chart.umd.min.js' %}"></script>
+
+    <script>
+        // =======================================================
+        // GRÁFICOS DO RELATÓRIO (mesma lógica do Dashboard)
+        // =======================================================
+        // O Django envia as listas de dados em JSON (|safe indica
+        // que o conteúdo é código JavaScript válido).
+        // =======================================================
+
+        // Dados reais do usuário (vindos do banco via View).
+        const graficoMeses = {{ grafico_meses|safe }};
+        const graficoReceitas = {{ grafico_receitas|safe }};
+        const graficoDespesas = {{ grafico_despesas|safe }};
+        const graficoSaldoAcumulado = {{ grafico_saldo_acumulado|safe }};
+        const graficoCategoriasRotulos = {{ grafico_categorias_rotulos|safe }};
+        const graficoCategoriasValores = {{ grafico_categorias_valores|safe }};
+
+        // ── Gráfico 1: Receitas x Despesas (colunas) ──
+        new Chart(document.getElementById('graficoComparacao'), {
+            type: 'bar',
+            data: {
+                labels: graficoMeses,
+                datasets: [
+                    {
+                        label: 'Receitas',
+                        data: graficoReceitas,
+                        backgroundColor: 'rgba(46, 125, 50, 0.75)',
+                    },
+                    {
+                        label: 'Despesas',
+                        data: graficoDespesas,
+                        backgroundColor: 'rgba(198, 40, 40, 0.75)',
+                    }
+                ]
+            },
+            options: { responsive: true }
+        });
+
+        // ── Gráfico 2: Despesas por categoria (pizza) ──
+        new Chart(document.getElementById('graficoCategorias'), {
+            type: 'pie',
+            data: {
+                labels: graficoCategoriasRotulos,
+                datasets: [{
+                    data: graficoCategoriasValores,
+                    backgroundColor: [
+                        '#D4A017', '#1565c0', '#2e7d32', '#c62828',
+                        '#6a1b9a', '#ef6c00', '#00695c', '#5d4037'
+                    ]
+                }]
+            },
+            options: { responsive: true }
+        });
+
+        // ── Gráfico 3: Evolução do saldo (linha) ──
+        new Chart(document.getElementById('graficoEvolucao'), {
+            type: 'line',
+            data: {
+                labels: graficoMeses,
+                datasets: [{
+                    label: 'Saldo acumulado',
+                    data: graficoSaldoAcumulado,
+                    borderColor: '#D4A017',
+                    backgroundColor: 'rgba(212, 160, 23, 0.15)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: { responsive: true }
+        });
+    </script>
+
+    {# ═══════════════════════════════════════════════════════ #}
+    {# CSS DE IMPRESSÃO (@media print)                          #}
+    {# ═══════════════════════════════════════════════════════ #}
+    {# O CSS normal (style.css) controla a página na tela.     #}
+    {# Aqui definimos regras que valem APENAS na impressão:     #}
+    {# fundo branco, esconder menu/botões, tabelas que não      #}
+    {# quebram no meio e numeração de páginas.                  #}
+    {# ═══════════════════════════════════════════════════════ #}
+    <style>
+        @media print {
+            /* Formato A4 com margens. */
+            @page {
+                size: A4;
+                margin: 1.5cm 1.2cm 2cm 1.2cm;
+
+                /* Numeração de páginas no rodapé ("Página 1 de 3").
+                   OBS: é um recurso do CSS Paged Media. Navegadores
+                   que ainda não suportam essas "margin boxes" (caso
+                   do Chrome) simplesmente ignoram esta regra — por
+                   isso não usamos nada que dependa dela. Onde há
+                   suporte (impressoras PDF e alguns navegadores),
+                   a numeração aparece automaticamente. */
+                @bottom-center {
+                    content: "PigMoney — Relatório Financeiro — Página " counter(page) " de " counter(pages);
+                    font-size: 8pt;
+                    color: #6B6B6B;
+                }
+            }
+
+            /* Na impressão a logo fica ainda menor, */
+            /* cabendo melhor no topo da folha A4. */
+            .relatorio-logo img {
+                height: 56px;
+            }
+
+            /* ── Oculta tudo que não deve ir para o papel ── */
+            /* Menu de navegação, cabeçalho, rodapé do site, */
+            /* botão de impressão e gráficos de tela (canvas). */
+            .site-header,
+            .site-footer,
+            .no-print,
+            .graficos-tela {
+                display: none !important;
+            }
+
+            /* Mostra as tabelas que substituem os gráficos na impressão. */
+            .graficos-impressao {
+                display: block !important;
+            }
+
+            /* Fundo branco e texto legível. */
+            body {
+                background: #FFFFFF !important;
+                font-size: 11pt;
+            }
+
+            /* O relatório ocupa toda a largura da folha. */
+            .page, .relatorio {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            /* Seções: bordas discretas e evita quebra no meio. */
+            .relatorio-secao {
+                break-inside: avoid-page;
+                page-break-inside: avoid;
+                border: 1px solid #E5D9A8 !important;
+                box-shadow: none !important;
+                margin-bottom: 0.6cm !important;
+            }
+
+            /* Títulos não ficam sozinhos no fim de uma página. */
+            h1, h2, h3 {
+                break-after: avoid;
+                page-break-after: avoid;
+            }
+
+            /* Cabeçalhos de tabela se repetem em cada página. */
+            thead {
+                display: table-header-group;
+            }
+
+            /* Linhas nunca são cortadas entre páginas. */
+            tr {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            /* Rodapé do relatório fica no fim, com linha separadora. */
+            .relatorio-rodape {
+                margin-top: 0.6cm;
+                border-top: 1px solid #D4A017;
+                padding-top: 0.2cm;
+                font-size: 9pt;
+                color: #6B6B6B;
+            }
+        }
+
+        /* Na tela, a versão de impressão dos gráficos fica oculta. */
+        .graficos-impressao {
+            display: none;
+        }
+
+        /* ── CABEÇALHO DO RELATÓRIO (tela) ──
+           Logo em cima, centralizada; abaixo dela
+           ficam as informações de identificação. */
+        .relatorio-cabecalho {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--dourado-escuro, #D4A017);
+        }
+
+        /* A logo original é muito grande (2172x724 px),
+           então reduzimos a altura para ela não dominar
+           a página. A largura acompanha proporcionalmente. */
+        .relatorio-logo img {
+            height: 80px;
+            width: auto;
+            display: block;
+        }
+    </style>
+
+{% endblock %}

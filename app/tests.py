@@ -199,3 +199,87 @@ class HistoricoTestes(BaseTeste):
         resposta = self.client.get(reverse('historico'), {'tipo': 'Despesa'})
         self.assertContains(resposta, 'Aluguel')
         self.assertNotContains(resposta, 'Salario do mes')
+
+
+class RelatorioTestes(BaseTeste):
+    """Testes da funcionalidade de Relatório Financeiro (impressão)."""
+
+    def test_relatorio_exige_login(self):
+        """A página de relatório só pode ser acessada logado."""
+        resposta = self.client.get(reverse('relatorio'))
+        # 302 = redirecionamento para a tela de login.
+        self.assertEqual(resposta.status_code, 302)
+
+    def test_relatorio_mostra_dados_do_usuario_logado(self):
+        """O relatório exibe receitas, despesas, saldo e metas."""
+        self.fazer_login(self.usuario1)
+        resposta = self.client.get(reverse('relatorio'))
+        self.assertEqual(resposta.status_code, 200)
+
+        # Movimentações do usuário aparecem no relatório.
+        self.assertContains(resposta, 'Salario do mes')
+        self.assertContains(resposta, 'Aluguel')
+
+        # Valores formatados no padrão brasileiro (tag |moeda).
+        self.assertContains(resposta, 'R$ 3.000,00')  # Total de receitas.
+        self.assertContains(resposta, 'R$ 800,00')    # Total de despesas.
+        # Saldo = 3000 - 800 = 2200.
+        self.assertContains(resposta, 'R$ 2.200,00')
+
+        # Identificação do relatório.
+        self.assertContains(resposta, 'PigMoney')
+        self.assertContains(resposta, 'Joao')
+
+    def test_relatorio_nao_exibe_dados_de_outro_usuario(self):
+        """Usuário 2 não vê as movimentações do usuário 1 no relatório."""
+        self.fazer_login(self.usuario2)
+        resposta = self.client.get(reverse('relatorio'))
+        self.assertEqual(resposta.status_code, 200)
+
+        self.assertNotContains(resposta, 'Salario do mes')
+        self.assertNotContains(resposta, 'Aluguel')
+        # O saldo do usuário 2 (sem dados) é zero.
+        self.assertContains(resposta, 'R$ 0,00')
+
+    def test_relatorio_sem_movimentacoes(self):
+        """Usuário sem dados vê a mensagem de "sem dados", sem erro."""
+        # Cria um usuário novo, sem nenhuma movimentação.
+        usuario_vazio = User.objects.create_user(
+            username='sem_dados', password='senha12345'
+        )
+        self.fazer_login(usuario_vazio)
+        resposta = self.client.get(reverse('relatorio'))
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertContains(
+            resposta,
+            'Não existem dados financeiros para apresentar'
+        )
+
+    def test_relatorio_exibe_metas_planejamento_e_categorias(self):
+        """Metas, planejamento e % por categoria aparecem no relatório."""
+        # Meta: 1500 acumulados de 4000 = 37,5%.
+        MetaFinanceira.objects.create(
+            usuario=self.usuario1, nome_meta='Comprar notebook',
+            valor_objetivo=4000, valor_atual=1500,
+            prazo=date(2026, 12, 20)
+        )
+        # Planejamento do mês atual: limite 2000, gasto 800,
+        # restante 1200 e 40% utilizado.
+        hoje = date.today()
+        PlanejamentoMensal.objects.create(
+            usuario=self.usuario1, mes=hoje.month, ano=hoje.year,
+            limite_gastos=2000
+        )
+
+        self.fazer_login(self.usuario1)
+        resposta = self.client.get(reverse('relatorio'))
+        self.assertEqual(resposta.status_code, 200)
+
+        self.assertContains(resposta, 'Comprar notebook')
+        self.assertContains(resposta, '37,5%')       # Progresso da meta.
+        self.assertContains(resposta, 'R$ 2.000,00')  # Limite planejado.
+        self.assertContains(resposta, 'R$ 1.200,00')  # Restante.
+        # A despesa de 800 é 100% das despesas do usuário 1
+        # (a categoria dele é "Salario").
+        self.assertContains(resposta, '100,0%')

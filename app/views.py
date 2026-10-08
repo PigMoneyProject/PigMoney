@@ -33,7 +33,11 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 
 # Sum é utilizado pelo ORM do Django para somar valores no banco.
 # aggregate retorna um resultado agregado sobre vários registros.
-from django.db.models import Sum
+from django.db.models import Sum, Min
+
+# timezone: fornece a data/hora atual com o fuso horário
+# configurado em settings.py (America/Sao_Paulo).
+from django.utils import timezone
 
 # Função login() do Django: autentica o usuário e cria a sessão.
 from django.contrib.auth import login
@@ -993,3 +997,172 @@ def historico(request):
         'filtro_data_inicio': data_inicio,
         'filtro_data_fim': data_fim,
     })
+
+
+# ==========================================
+# RELATÓRIO FINANCEIRO (IMPRESSÃO)
+# ==========================================
+
+@login_required  # Somente usuários logados podem gerar o relatório.
+def relatorio(request):
+    """
+    Página de relatório financeiro completo para impressão.
+
+    Reúne, para o usuário autenticado:
+    - Identificação (PigMoney, usuário, data/hora, período)
+    - Resumo financeiro (receitas, despesas, saldo, planejamento)
+    - Lista de receitas e despesas
+    - Despesas por categoria (com % de participação)
+    - Metas financeiras
+    - Histórico de movimentações
+    - Dados dos gráficos (Chart.js)
+
+    REGRAS DE SEGURANÇA E BOAS PRÁTICAS:
+    - Toda consulta filtra por usuario=request.user, ou seja,
+      cada usuário só vê os próprios dados.
+    - select_related('categoria') faz o Django buscar a categoria
+      junto com a movimentação (JOIN), evitando uma consulta extra
+      ao banco para cada linha da tabela.
+    - Reaproveitamos as funções auxiliares já existentes
+      (montar_movimentacoes, calcular_planejamento e
+      preparar_dados_graficos), sem duplicar as regras de cálculo.
+    """
+    # ── DATA/HORA DE GERAÇÃO ──
+    # timezone.now() respeita o fuso horário do projeto.
+    gerado_em = timezone.now()
+    hoje = date.today()
+
+    # ── CONSULTAS AO BANCO (sempre filtradas pelo usuário) ──
+    # select_related('categoria') = JOIN na tabela de categorias,
+    # para não fazer 1 consulta extra por movimentação.
+    receitas = Receita.objects.filter(
+        usuario=request.user
+    ).select_related('categoria')
+
+    despesas = Despesa.objects.filter(
+        usuario=request.user
+    ).select_related('categoria')
+
+    # ── TOTAIS (soma feita dentro do banco via aggregate/Sum) ──
+    # aggregate retorna {'total': Decimal} ou {'total': None}.
+    # O "or 0" garante 0 quando o usuário não tem lançamentos.
+    total_receitas = receitas.aggregate(
+        total=Sum('valor')
+    )['total'] or 0
+
+    total_despesas = despesas.aggregate(
+        total=Sum('valor')
+    )['total'] or 0
+
+    # Saldo = receitas - despesas (mesma regra do Dashboard).
+    saldo = total_receitas - total_despesas
+
+    # ── PERÍODO DO RELATÓRIO ──
+    # Min() encontra a movimentação mais antiga (receita ou despesa).
+    primeira_receita = receitas.aggregate(
+        primeira=Min('data_receita')
+    )['primeira']
+    primeira_despesa = despesas.aggregate(
+        primeira=Min('data_despesa')
+    )['primeira']
+
+    # O início do período é a mais antiga entre as duas.
+    # Filtramos apenas os valores que existem (não None).
+    datas_inicio = [d for d in [primeira_receita, primeira_despesa] if d]
+    data_inicio = min(datas_inicio) if datas_inicio else None
+
+    # ── PLANEJAMENTO MENSAL DO MÊS ATUAL ──
+    # .first() retorna o registro ou None (limite não definido).
+    planejamento_atual = PlanejamentoMensal.objects.filter(
+        usuario=request.user,
+        mes=hoje.month,
+        ano=hoje.year
+    ).first()
+
+    # Despesas do mês atual (filtradas a partir do queryset do usuário).
+    despesas_mes = despesas.filter(
+        data_despesa__year=hoje.year,
+        data_despesa__month=hoje.month
+    )
+
+    # Reaproveita a regra de cálculo já existente no projeto.
+    dados_planejamento = calcular_planejamento(planejamento_atual, despesas_mes)
+
+    # ── DESPESAS POR CATEGORIA (com % de participação) ──
+    # values() + annotate() agrupa as despesas pelo nome da
+    # categoria e soma os valores de cada grupo (GROUP BY no SQL).
+    despesas_por_categoria = (
+        Despesa.objects
+        .filter(usuario=request.user)
+        .values('categoria__nome_categoria')
+        .annotate(total=Sum('valor'))
+        .order_by('-total')  # Maior gasto primeiro.
+    )
+
+    # Monta a lista final calculando a participação percentual.
+    categorias_gastos = []
+    for item in despesas_por_categoria:
+        total_categoria = item['total'] or 0
+        # % = (gasto da categoria / total de despesas) * 100.
+        # Proteção: só calcula se houver despesas (evita divisão por zero).
+        if total_despesas > 0:
+            participacao = round(
+                (total_categoria / total_despesas) * 100, 1
+            )
+        else:
+            participacao = 0
+        categorias_gastos.append({
+            'categoria': item['categoria__nome_categoria'],
+            'total': total_categoria,
+            'participacao': participacao,
+        })
+
+    # ── METAS FINANCEIRAS ──
+    metas = MetaFinanceira.objects.filter(usuario=request.user)
+
+    # ── HISTÓRICO COMPLETO (receitas + despesas ordenadas) ──
+    # Reaproveita a função auxiliar já usada no Dashboard.
+    movimentacoes = montar_movimentacoes(receitas, despesas)
+
+    # ── DADOS DOS GRÁFICOS ──
+    # preparar_dados_graficos() retorna listas em JSON (para o Chart.js).
+    # Aqui também convertemos de volta para listas Python, porque
+    # na impressão exibimos os mesmos dados em tabelas (mais confiável
+    # para imprimir do que um gráfico em tela).
+    dados_graficos = preparar_dados_graficos(request.user)
+    meses_tabela = json.loads(dados_graficos['meses'])
+    receitas_tabela = json.loads(dados_graficos['receitas'])
+    despesas_tabela = json.loads(dados_graficos['despesas'])
+    saldo_acumulado_tabela = json.loads(dados_graficos['saldo_acumulado'])
+
+    # Contexto enviado ao template (tudo já calculado acima).
+    contexto = {
+        'gerado_em': gerado_em,
+        'data_inicio': data_inicio,
+        'hoje': hoje,
+        'total_receitas': total_receitas,
+        'total_despesas': total_despesas,
+        'quantidade_receitas': receitas.count(),
+        'quantidade_despesas': despesas.count(),
+        'saldo': saldo,
+        'dados_planejamento': dados_planejamento,
+        'receitas': receitas,
+        'despesas': despesas,
+        'categorias_gastos': categorias_gastos,
+        'metas': metas,
+        'movimentacoes': movimentacoes,
+        # Gráficos em tela (JSON, como no Dashboard).
+        'grafico_meses': dados_graficos['meses'],
+        'grafico_receitas': dados_graficos['receitas'],
+        'grafico_despesas': dados_graficos['despesas'],
+        'grafico_saldo_acumulado': dados_graficos['saldo_acumulado'],
+        'grafico_categorias_rotulos': dados_graficos['categorias_rotulos'],
+        'grafico_categorias_valores': dados_graficos['categorias_valores'],
+        # Dados dos gráficos em formato de lista (tabelas da impressão).
+        'tabela_meses': meses_tabela,
+        'tabela_receitas_mes': receitas_tabela,
+        'tabela_despesas_mes': despesas_tabela,
+        'tabela_saldo_acumulado': saldo_acumulado_tabela,
+    }
+
+    return render(request, 'financeiro/relatorio.html', contexto)
